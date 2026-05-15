@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "usuario")
 @Getter
 @Setter
-public class User {
+public class User extends BaseEntity{
 
     @Column(name = "nombre")
     private String name;
@@ -30,5 +30,6 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "id_rol")
-    private Rol role;
+    private Role role;
+
 }
