@@ -1,8 +1,3 @@
-// src/components/Select.jsx
-
-/**
- * Select con label. Recibe un array de { value, label } o strings simples.
- */
 export default function Select({
   label,
   id,
@@ -32,7 +27,7 @@ export default function Select({
           transition-colors cursor-pointer ${className}`}
       >
         {options.map((opt) => {
-          const val = typeof opt === "string" ? opt : opt.value;
+          const val   = typeof opt === "string" ? opt : opt.value;
           const label = typeof opt === "string" ? opt : opt.label;
           return (
             <option key={val} value={val}>

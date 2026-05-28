@@ -1,10 +1,3 @@
-/**
- * pages/ChefDashboard.jsx
- * ─────────────────────────
- * Panel principal del Chef — Cola de órdenes.
- * Rol: chef
- */
-
 import DashboardLayout from "../templates/DashboardLayout.jsx";
 import PageHeader      from "../global/components/PageHeader.jsx";
 import Badge           from "../global/components/Badge.jsx";
@@ -35,9 +28,9 @@ const ORDENES = [
 ];
 
 const ESTADO_CONFIG = {
-  pendiente:      { badge: <Badge variant="danger">Pendiente</Badge>,          accent: "#D64035" },
-  en_preparacion: { badge: <Badge variant="warning">En preparación</Badge>,    accent: "#E8A020" },
-  lista:          { badge: <Badge variant="success">Lista</Badge>,             accent: "#2E9E5B" },
+  pendiente:      { badge: <Badge variant="danger">Pendiente</Badge>,       accent: "#D64035" },
+  en_preparacion: { badge: <Badge variant="warning">En preparación</Badge>, accent: "#E8A020" },
+  lista:          { badge: <Badge variant="success">Lista</Badge>,          accent: "#2E9E5B" },
 };
 
 export default function ChefDashboard() {
@@ -54,7 +47,6 @@ export default function ChefDashboard() {
               className="bg-white rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 border-l-4"
               style={{ borderLeftColor: accent }}
             >
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
                   <span className="font-black text-gray-900">{o.id}</span>
@@ -64,7 +56,6 @@ export default function ChefDashboard() {
                 <p className="text-sm text-gray-600 truncate">{o.platos.join(" · ")}</p>
               </div>
 
-              {/* Tiempo + acción */}
               <div className="flex sm:flex-col items-center sm:items-end gap-3">
                 <div className="flex items-center gap-1 text-xs text-gray-400">
                   <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-3.5 h-3.5">

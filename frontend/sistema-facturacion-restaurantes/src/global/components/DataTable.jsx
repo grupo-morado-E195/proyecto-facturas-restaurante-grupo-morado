@@ -1,11 +1,3 @@
-// src/components/DataTable.jsx
-
-/**
- * Tabla de datos responsiva con zebra striping.
- * @param {string[]} columns - Headers de las columnas
- * @param {Array}    rows    - Array de arrays; cada celda puede ser string, number o JSX
- * @param {string}   emptyMessage - Mensaje cuando no hay datos
- */
 export default function DataTable({
   columns = [],
   rows = [],

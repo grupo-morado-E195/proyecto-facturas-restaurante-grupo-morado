@@ -1,22 +1,15 @@
-/**
- * pages/CashierDashboard.jsx
- * ────────────────────────────
- * Panel principal del Cajero.
- * Rol: cajero
- */
-
 import DashboardLayout from "../templates/DashboardLayout.jsx";
 import StatCard        from "../global/components/StatCard.jsx";
 import Button          from "../global/components/Button.jsx";
 
 const ORDENES_LISTAS = [
-  { id: "#042", mesa: 3, total: "$85.000" },
+  { id: "#042", mesa: 3, total: "$85.000"  },
   { id: "#038", mesa: 9, total: "$120.000" },
 ];
 
 const RESUMEN = [
-  { label: "Órdenes facturadas", val: "8" },
-  { label: "Total ventas",       val: "$1.240.000" },
+  { label: "Órdenes facturadas", val: "8"           },
+  { label: "Total ventas",       val: "$1.240.000"  },
   { label: "Plato más vendido",  val: "Bandeja Paisa" },
 ];
 
@@ -37,7 +30,6 @@ export default function CajeroDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Órdenes listas */}
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 text-sm mb-4">
             Órdenes Listas para Facturar
@@ -57,7 +49,6 @@ export default function CajeroDashboard() {
           </div>
         </div>
 
-        {/* Resumen del día */}
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 text-sm mb-4">Resumen del Día</h2>
           <div className="divide-y divide-gray-100">

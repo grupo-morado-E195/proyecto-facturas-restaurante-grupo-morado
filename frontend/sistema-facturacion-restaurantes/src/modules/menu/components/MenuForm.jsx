@@ -1,16 +1,9 @@
-/**
- * modules/menu/components/MenuForm.jsx
- * ──────────────────────────────────────
- * Formulario para crear o editar un menú.
- * Campos: nombre, estado.
- */
-
 import Input  from "../../../global/components/Input.jsx";
 import Select from "../../../global/components/Select.jsx";
 import Button from "../../../global/components/Button.jsx";
 
 const ESTADO_OPTIONS = [
-  { value: "activo",   label: "Activo" },
+  { value: "activo",   label: "Activo"   },
   { value: "inactivo", label: "Inactivo" },
 ];
 

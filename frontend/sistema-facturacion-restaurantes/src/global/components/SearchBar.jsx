@@ -1,10 +1,3 @@
-// src/components/SearchBar.jsx
-
-/**
- * Barra de búsqueda con filtros selectores opcionales.
- * @param {string}   placeholder - Texto del input de búsqueda
- * @param {Array}    filters     - Array de { placeholder, options[] }
- */
 export default function SearchBar({ placeholder = "Buscar...", filters = [] }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2 mb-4">

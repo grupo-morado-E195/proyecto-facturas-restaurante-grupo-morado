@@ -1,16 +1,9 @@
-/**
- * modules/table/components/TableForm.jsx
- * ────────────────────────────────────────
- * Formulario para crear o editar una mesa.
- * Campos: número de mesa, estado de registro.
- */
-
 import Input  from "../../../global/components/Input.jsx";
 import Select from "../../../global/components/Select.jsx";
 import Button from "../../../global/components/Button.jsx";
 
 const ESTADO_OPTIONS = [
-  { value: "activa",   label: "Activa" },
+  { value: "activa",   label: "Activa"   },
   { value: "inactiva", label: "Inactiva" },
 ];
 

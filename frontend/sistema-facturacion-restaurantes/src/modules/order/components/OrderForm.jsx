@@ -1,26 +1,19 @@
-/**
- * modules/order/components/OrderForm.jsx
- * ──────────────────────────────────────
- * Formulario para registrar una nueva orden.
- * Campos: mesa, platos (con cantidades), observaciones.
- */
-
 import Select from "../../../global/components/Select.jsx";
 import Input  from "../../../global/components/Input.jsx";
 import Button from "../../../global/components/Button.jsx";
 
 const MESA_OPTIONS = [
   { value: "",  label: "Seleccionar mesa..." },
-  { value: "2", label: "Mesa 2 (Libre)" },
-  { value: "4", label: "Mesa 4 (Libre)" },
-  { value: "6", label: "Mesa 6 (Libre)" },
-  { value: "8", label: "Mesa 8 (Libre)" },
+  { value: "2", label: "Mesa 2 (Libre)"      },
+  { value: "4", label: "Mesa 4 (Libre)"      },
+  { value: "6", label: "Mesa 6 (Libre)"      },
+  { value: "8", label: "Mesa 8 (Libre)"      },
 ];
 
 const SAMPLE_ITEMS = [
   { nombre: "Bandeja Paisa",   precio: "$38.000" },
   { nombre: "Ajiaco",          precio: "$32.000" },
-  { nombre: "Jugo de Lulo",    precio: "$8.000" },
+  { nombre: "Jugo de Lulo",    precio: "$8.000"  },
   { nombre: "Arepa de Choclo", precio: "$12.000" },
 ];
 
@@ -29,7 +22,6 @@ export default function OrderForm({ onCancel }) {
     <form onSubmit={(e) => e.preventDefault()}>
       <Select label="Mesa" options={MESA_OPTIONS} required />
 
-      {/* Detalle de platos */}
       <div className="mb-4">
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
           Platos <span className="text-red-500">*</span>

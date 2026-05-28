@@ -1,13 +1,3 @@
-/**
- * modules/auth/Login.jsx
- * ───────────────────────
- * RESPONSABILIDAD:
- *   - Pantalla de inicio de sesión del sistema SFR.
- *   - Delega la lógica de autenticación a useAuth().login().
- *   - Redirige al dashboard del usuario según su rol tras el login.
- *   - Muestra estados de carga y error reales.
- */
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../global/hooks/useAuth.js";
@@ -20,9 +10,9 @@ export default function Login() {
   const navigate = useNavigate();
 
   const [showForgot, setShowForgot] = useState(false);
-  const [email, setEmail]     = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError]     = useState(null);
+  const [error, setError]       = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +27,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Panel izquierdo — branding ─────────────────────────── */}
       <div
         className="hidden lg:flex flex-col items-center justify-center flex-1
         bg-gradient-to-br from-[#1A0A00] to-[#3D1A00] p-12 text-center"
@@ -60,7 +49,6 @@ export default function Login() {
           facturación e informes en un solo lugar.
         </p>
 
-        {/* Feature list */}
         <div className="mt-10 space-y-3 text-left w-full max-w-xs">
           {[
             "Gestión de mesas y órdenes",
@@ -80,16 +68,15 @@ export default function Login() {
           ))}
         </div>
 
-        {/* Accesos rápidos (solo desarrollo) */}
         <div className="mt-10 p-4 bg-white/5 rounded-xl border border-white/10 w-full max-w-xs text-left">
           <p className="text-[#FFA94D] text-xs font-bold mb-2 uppercase tracking-wide">
             Credenciales de prueba
           </p>
           {[
-            { role: "Admin",   email: "admin@sfr.com",   pass: "admin123" },
-            { role: "Mesero",  email: "mesero@sfr.com",  pass: "mesero123" },
-            { role: "Chef",    email: "chef@sfr.com",    pass: "chef123" },
-            { role: "Cajero",  email: "cajero@sfr.com",  pass: "cajero123" },
+            { role: "Admin",  email: "admin@sfr.com",   pass: "admin123"  },
+            { role: "Mesero", email: "mesero@sfr.com",  pass: "mesero123" },
+            { role: "Chef",   email: "chef@sfr.com",    pass: "chef123"   },
+            { role: "Cajero", email: "cajero@sfr.com",  pass: "cajero123" },
           ].map(({ role, email: e, pass }) => (
             <button
               key={role}
@@ -103,10 +90,8 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ── Panel derecho — formulario ──────────────────────────── */}
       <div className="flex-1 flex items-center justify-center p-6 bg-[#FFF8F0] lg:max-w-[480px]">
         <div className="w-full max-w-sm">
-          {/* Logo móvil */}
           <div className="flex items-center gap-3 mb-8 lg:hidden">
             <div className="w-10 h-10 rounded-xl bg-[#E87722] flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
@@ -159,7 +144,6 @@ export default function Login() {
                 </Button>
               </form>
 
-              {/* Error real */}
               {error && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#D64035" strokeWidth="2"

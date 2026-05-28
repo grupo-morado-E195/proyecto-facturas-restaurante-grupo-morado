@@ -1,6 +1,6 @@
 package com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities;
 
-import com.grupo_morado.sistema_facturacion_inventario.domain.model.enums.StatusEnum;
+import com.grupo_morado.sistema_facturacion_inventario.domain.enums.StatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

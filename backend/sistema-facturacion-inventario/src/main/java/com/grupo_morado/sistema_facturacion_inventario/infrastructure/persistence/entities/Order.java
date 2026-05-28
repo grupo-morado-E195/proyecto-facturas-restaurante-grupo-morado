@@ -1,6 +1,6 @@
 package com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities;
 
-import com.grupo_morado.sistema_facturacion_inventario.domain.model.enums.OrderStatusEnum;
+import com.grupo_morado.sistema_facturacion_inventario.domain.enums.OrderStatusEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

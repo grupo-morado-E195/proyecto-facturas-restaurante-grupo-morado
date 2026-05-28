@@ -1,5 +1,3 @@
-// Paleta de colores del sistema SFR
-// Estos valores están sincronizados con tailwind.config.js
 export const COLORS = {
   primary: "#E87722",
   primaryDark: "#C45F10",

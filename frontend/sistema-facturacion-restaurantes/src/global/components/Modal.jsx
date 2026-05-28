@@ -1,10 +1,5 @@
-// src/components/Modal.jsx
 import { useEffect } from "react";
 
-/**
- * Modal overlay con título, botón de cierre y contenido via children.
- * Se cierra al presionar Escape.
- */
 export default function Modal({ title, onClose, children, size = "md" }) {
   useEffect(() => {
     const handleKey = (e) => {
@@ -27,7 +22,6 @@ export default function Modal({ title, onClose, children, size = "md" }) {
       <div
         className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClass} max-h-[90vh] flex flex-col`}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="font-bold text-gray-900 text-base">{title}</h2>
           <button
@@ -39,7 +33,6 @@ export default function Modal({ title, onClose, children, size = "md" }) {
             ×
           </button>
         </div>
-        {/* Body */}
         <div className="overflow-y-auto px-6 py-5 flex-1">{children}</div>
       </div>
     </div>

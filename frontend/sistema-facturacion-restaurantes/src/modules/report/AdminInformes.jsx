@@ -1,21 +1,14 @@
-/**
- * modules/report/AdminInformes.jsx
- * ──────────────────────────────────
- * Informes de ventas del administrador.
- * Rol: Administrador
- */
-
 import DashboardLayout from "../../templates/DashboardLayout.jsx";
 import PageHeader      from "../../global/components/PageHeader.jsx";
 import Button          from "../../global/components/Button.jsx";
 import Input           from "../../global/components/Input.jsx";
 
 const RESUMEN = [
-  ["Ventas totales",     "$1.240.000"],
-  ["Órdenes facturadas", "8"],
-  ["Plato más vendido",  "Bandeja Paisa (14 uds)"],
-  ["Plato menos vendido","Sancocho (2 uds)"],
-  ["Generado por",       "Juan García"],
+  ["Ventas totales",      "$1.240.000"           ],
+  ["Órdenes facturadas",  "8"                    ],
+  ["Plato más vendido",   "Bandeja Paisa (14 uds)"],
+  ["Plato menos vendido", "Sancocho (2 uds)"     ],
+  ["Generado por",        "Juan García"          ],
 ];
 
 const VENTAS_MESERO = [
@@ -28,7 +21,6 @@ export default function AdminInformes() {
     <DashboardLayout screenName="Informes de Ventas" activeItem="informes">
       <PageHeader title="Informes de Ventas" />
 
-      {/* Generador de informe */}
       <div className="bg-white rounded-xl p-5 shadow-sm mb-5">
         <h2 className="font-bold text-gray-800 text-sm mb-4">Generar Informe Diario</h2>
         <div className="flex flex-col sm:flex-row gap-3 items-end">
@@ -42,7 +34,6 @@ export default function AdminInformes() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Resumen del día */}
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 text-sm mb-4">Resumen del Día</h2>
           <div className="divide-y divide-gray-100">
@@ -55,7 +46,6 @@ export default function AdminInformes() {
           </div>
         </div>
 
-        {/* Ventas por mesero */}
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 text-sm mb-4">Ventas por Mesero</h2>
           <div className="space-y-4">

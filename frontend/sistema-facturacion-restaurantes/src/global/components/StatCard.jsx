@@ -1,13 +1,3 @@
-// src/components/StatCard.jsx
-
-/**
- * Tarjeta de estadística para dashboards.
- * @param {string} label    - Etiqueta de la métrica
- * @param {string} value    - Valor principal
- * @param {string} subtitle - Texto secundario
- * @param {string} accent   - Color de acento (clase Tailwind o hex)
- * @param {React.ReactNode} icon - Ícono (SVG o componente)
- */
 export default function StatCard({
   label,
   value,

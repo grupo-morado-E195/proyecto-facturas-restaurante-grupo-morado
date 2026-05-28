@@ -1,15 +1,10 @@
-// src/components/Input.jsx
-
-/**
- * Campo de entrada de texto con label.
- * Soporta type="text", "email", "password", "number", "date", "tel".
- * Usar asTextarea={true} para <textarea>.
- */
 export default function Input({
   label,
   id,
   type = "text",
   placeholder = "",
+  value,
+  onChange,
   defaultValue,
   asTextarea = false,
   rows = 3,
@@ -45,6 +40,8 @@ export default function Input({
           id={inputId}
           type={type}
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
           defaultValue={defaultValue}
           className={baseClass}
         />

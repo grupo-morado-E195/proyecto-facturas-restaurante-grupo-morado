@@ -1,16 +1,9 @@
-/**
- * modules/facturation/components/BillingForm.jsx
- * ─────────────────────────────────────────────────
- * Formulario de confirmación de facturación.
- * Muestra detalle de la orden y permite seleccionar método de pago.
- */
-
 import Button from "../../../global/components/Button.jsx";
 
 const SAMPLE_ITEMS = [
   { nombre: "Bandeja Paisa", cantidad: 1, precioUnitario: 38000 },
   { nombre: "Ajiaco",        cantidad: 1, precioUnitario: 32000 },
-  { nombre: "Jugo de Lulo",  cantidad: 2, precioUnitario: 8000 },
+  { nombre: "Jugo de Lulo",  cantidad: 2, precioUnitario: 8000  },
 ];
 
 const TAX_RATE = 0.08;
@@ -31,13 +24,11 @@ export default function BillingForm({
 
   return (
     <div>
-      {/* Info de orden */}
       <div className="bg-gray-50 rounded-lg px-4 py-3 mb-4 text-sm">
         <p className="font-bold text-gray-800">Orden {orderId}</p>
         <p className="text-gray-500 text-xs mt-0.5">Mesa {mesa} · Mesero: {mesero}</p>
       </div>
 
-      {/* Detalle */}
       <div className="mb-4">
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
           Detalle de la orden
@@ -55,7 +46,6 @@ export default function BillingForm({
         ))}
       </div>
 
-      {/* Totales */}
       <div className="border-t-2 border-gray-200 pt-3 space-y-1.5 mb-5">
         <div className="flex justify-between text-sm text-gray-600">
           <span>Subtotal</span>
@@ -71,7 +61,6 @@ export default function BillingForm({
         </div>
       </div>
 
-      {/* Método de pago */}
       <div className="mb-5">
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
           Método de pago

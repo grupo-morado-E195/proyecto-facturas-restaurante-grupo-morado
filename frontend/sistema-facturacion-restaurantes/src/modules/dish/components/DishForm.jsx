@@ -1,32 +1,25 @@
-/**
- * modules/dish/components/DishForm.jsx
- * ──────────────────────────────────────
- * Formulario para crear o editar un plato del inventario.
- * Campos: nombre, descripción, precio, stock, menú, estado.
- */
-
 import Input  from "../../../global/components/Input.jsx";
 import Select from "../../../global/components/Select.jsx";
 import Button from "../../../global/components/Button.jsx";
 
 const MENU_OPTIONS = [
   { value: "",          label: "Seleccionar menú..." },
-  { value: "desayunos", label: "Desayunos" },
-  { value: "almuerzos", label: "Almuerzos" },
-  { value: "cenas",     label: "Cenas" },
-  { value: "bebidas",   label: "Bebidas" },
-  { value: "postres",   label: "Postres" },
+  { value: "desayunos", label: "Desayunos"           },
+  { value: "almuerzos", label: "Almuerzos"           },
+  { value: "cenas",     label: "Cenas"               },
+  { value: "bebidas",   label: "Bebidas"             },
+  { value: "postres",   label: "Postres"             },
 ];
 
 const ESTADO_OPTIONS = [
-  { value: "activo",   label: "Activo" },
+  { value: "activo",   label: "Activo"   },
   { value: "inactivo", label: "Inactivo" },
 ];
 
 export default function DishForm({ onCancel, isEdit = false }) {
   return (
     <form onSubmit={(e) => e.preventDefault()}>
-      <Input label="Nombre del Plato"  placeholder="Ej: Bandeja Paisa"      required />
+      <Input label="Nombre del Plato"  placeholder="Ej: Bandeja Paisa"       required />
       <Input label="Descripción"       placeholder="Descripción del plato..." asTextarea rows={2} />
       <div className="grid grid-cols-2 gap-x-4">
         <Input label="Precio" type="number" placeholder="0.00" required />

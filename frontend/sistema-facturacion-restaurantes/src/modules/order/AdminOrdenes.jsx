@@ -1,10 +1,3 @@
-/**
- * modules/order/AdminOrdenes.jsx
- * ────────────────────────────────
- * Vista de administración de órdenes del sistema.
- * Rol: Administrador
- */
-
 import DashboardLayout from "../../templates/DashboardLayout.jsx";
 import PageHeader      from "../../global/components/PageHeader.jsx";
 import SearchBar       from "../../global/components/SearchBar.jsx";
@@ -13,18 +6,18 @@ import Badge           from "../../global/components/Badge.jsx";
 import Button          from "../../global/components/Button.jsx";
 
 const ORDENES = [
-  { id: "#042", mesa: "Mesa 3", mesero: "Laura M.",   platos: 2, subtotal: "$85.000",  estado: "lista" },
-  { id: "#041", mesa: "Mesa 7", mesero: "Carlos R.",  platos: 3, subtotal: "$120.000", estado: "en_preparacion" },
-  { id: "#040", mesa: "Mesa 1", mesero: "Laura M.",   platos: 1, subtotal: "$65.000",  estado: "facturada" },
-  { id: "#039", mesa: "Mesa 5", mesero: "Carlos R.",  platos: 2, subtotal: "$95.000",  estado: "facturada" },
-  { id: "#038", mesa: "Mesa 9", mesero: "Carlos R.",  platos: 2, subtotal: "$120.000", estado: "pendiente" },
+  { id: "#042", mesa: "Mesa 3", mesero: "Laura M.",  platos: 2, subtotal: "$85.000",  estado: "lista"          },
+  { id: "#041", mesa: "Mesa 7", mesero: "Carlos R.", platos: 3, subtotal: "$120.000", estado: "en_preparacion" },
+  { id: "#040", mesa: "Mesa 1", mesero: "Laura M.",  platos: 1, subtotal: "$65.000",  estado: "facturada"      },
+  { id: "#039", mesa: "Mesa 5", mesero: "Carlos R.", platos: 2, subtotal: "$95.000",  estado: "facturada"      },
+  { id: "#038", mesa: "Mesa 9", mesero: "Carlos R.", platos: 2, subtotal: "$120.000", estado: "pendiente"      },
 ];
 
 const ESTADO_BADGE = {
-  pendiente:       <Badge variant="danger">Pendiente</Badge>,
-  en_preparacion:  <Badge variant="warning">En preparación</Badge>,
-  lista:           <Badge variant="success">Lista</Badge>,
-  facturada:       <Badge variant="info">Facturada</Badge>,
+  pendiente:      <Badge variant="danger">Pendiente</Badge>,
+  en_preparacion: <Badge variant="warning">En preparación</Badge>,
+  lista:          <Badge variant="success">Lista</Badge>,
+  facturada:      <Badge variant="info">Facturada</Badge>,
 };
 
 export default function AdminOrdenes() {

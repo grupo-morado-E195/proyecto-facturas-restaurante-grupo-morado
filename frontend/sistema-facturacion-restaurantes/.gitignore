@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temp tools (scripts auxiliares de desarrollo)
+temp_tools/

@@ -1,10 +1,3 @@
-/**
- * modules/facturation/Facturacion.jsx
- * ─────────────────────────────────────
- * Gestión de facturación de órdenes listas.
- * Rol: Cajero
- */
-
 import { useState } from "react";
 import DashboardLayout from "../../templates/DashboardLayout.jsx";
 import PageHeader      from "../../global/components/PageHeader.jsx";
@@ -14,8 +7,8 @@ import Badge           from "../../global/components/Badge.jsx";
 import BillingForm     from "./components/BillingForm.jsx";
 
 const ORDENES_LISTAS = [
-  { id: "#042", mesa: 3, mesero: "Laura M.",   total: "$85.000" },
-  { id: "#038", mesa: 9, mesero: "Carlos R.",  total: "$120.000" },
+  { id: "#042", mesa: 3, mesero: "Laura M.",  total: "$85.000"  },
+  { id: "#038", mesa: 9, mesero: "Carlos R.", total: "$120.000" },
 ];
 
 const DETALLE_ITEMS = [
@@ -32,7 +25,6 @@ export default function Facturacion() {
       <PageHeader title="Facturación" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Órdenes listas */}
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <h2 className="font-bold text-gray-800 text-sm mb-4">
             Órdenes Listas para Facturar
@@ -55,7 +47,6 @@ export default function Facturacion() {
           </div>
         </div>
 
-        {/* Detalle de la orden seleccionada */}
         <div className="bg-white rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <h2 className="font-bold text-gray-800 text-sm">Detalle Orden #042</h2>
@@ -74,9 +65,9 @@ export default function Facturacion() {
 
           <div className="border-t-2 border-gray-200 pt-3 space-y-1.5 mb-5">
             {[
-              ["Subtotal", "$86.000", false],
-              ["Impuesto (8%)", "$6.880", false],
-              ["Total", "$92.880", true],
+              ["Subtotal",       "$86.000", false],
+              ["Impuesto (8%)",  "$6.880",  false],
+              ["Total",          "$92.880", true ],
             ].map(([k, v, bold]) => (
               <div
                 key={k}

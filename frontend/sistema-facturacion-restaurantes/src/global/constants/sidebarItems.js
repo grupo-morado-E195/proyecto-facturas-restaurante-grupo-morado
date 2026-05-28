@@ -1,13 +1,3 @@
-/**
- * global/constants/sidebarItems.js
- * ──────────────────────────────────
- * SIDEBAR_ITEMS centralizado por rol.
- * Antes estaba copiado en cada vista — ahora hay un solo lugar.
- *
- * Cada item: { icon, label, key, path }
- * El campo `path` permite que el Sidebar use <Link> de React Router.
- */
-
 import { ROUTES } from "./routes.js";
 
 export const SIDEBAR_BY_ROLE = {
