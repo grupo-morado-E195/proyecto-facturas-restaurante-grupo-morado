@@ -45,4 +45,7 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resultAuth);
     }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody )
+
 }
