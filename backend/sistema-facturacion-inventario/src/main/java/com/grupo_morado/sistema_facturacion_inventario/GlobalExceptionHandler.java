@@ -3,6 +3,7 @@ package com.grupo_morado.sistema_facturacion_inventario;
 import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.InvalidEmailException;
 import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.InvalidPasswordException;
 import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.NotFoundException;
+import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.TemporaryPasswordExpiredException;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -83,6 +84,20 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponseDTO(
                         HttpStatus.NOT_FOUND.value(),
                         "UNAUTHORIZED",
+                        error.getMessage(),
+                        request.getRequestURI(),
+                        LocalDateTime.now()
+                ));
+    }
+
+    @ExceptionHandler(TemporaryPasswordExpiredException.class)
+    public ResponseEntity<?> handleTemporaryPasswordExpired(TemporaryPasswordExpiredException error,
+                                                            HttpServletRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponseDTO(
+                        HttpStatus.UNAUTHORIZED.value(),
+                        "TEMPORARY_PASSWORD_EXPIRED",
                         error.getMessage(),
                         request.getRequestURI(),
                         LocalDateTime.now()

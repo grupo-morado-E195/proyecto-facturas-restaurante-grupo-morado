@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.2</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.grupo-morado</groupId>
 	<artifactId>sistema-facturacion-inventario</artifactId>
@@ -105,6 +105,11 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>0.13.0</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 	</dependencies>
 
