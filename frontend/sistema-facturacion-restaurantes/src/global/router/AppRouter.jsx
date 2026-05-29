@@ -5,6 +5,7 @@ import { ROUTES } from "../constants/routes.js";
 import { ROLES }  from "../constants/roles.js";
 
 import Login from "../../modules/auth/Login.jsx";
+import UpdatePassword from "../../modules/auth/UpdatePassword.jsx";
 
 import AdminDashboard   from "../../pages/AdminDashboard.jsx";
 import CashierDashboard from "../../pages/CashierDashboard.jsx";
@@ -17,6 +18,7 @@ import Inventario    from "../../modules/inventary/Inventario.jsx";
 import Menus         from "../../modules/menu/Menus.jsx";
 import AdminOrdenes  from "../../modules/order/AdminOrdenes.jsx";
 import AdminInformes from "../../modules/report/AdminInformes.jsx";
+import AdminRoles    from "../../pages/AdminRoles.jsx";
 
 import MeseroOrdenes from "../../modules/order/WaiterOrdenes.jsx";
 
@@ -30,6 +32,7 @@ export default function AppRouter() {
 
       <Route element={<PublicRoute />}>
         <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route path="/update-password" element={<UpdatePassword />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
@@ -40,6 +43,7 @@ export default function AppRouter() {
         <Route path={ROUTES.ADMIN_MENUS}      element={<Menus />} />
         <Route path={ROUTES.ADMIN_ORDENES}    element={<AdminOrdenes />} />
         <Route path={ROUTES.ADMIN_INFORMES}   element={<AdminInformes />} />
+        <Route path={ROUTES.ADMIN_ROLES}      element={<AdminRoles />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={[ROLES.MESERO]} />}>

@@ -16,10 +16,11 @@ export default function Topbar({ screenName = "", onToggleSidebar }) {
   const dropdownRef = useRef(null);
 
   const roleLabel = {
-    admin:  "Administrador",
-    mesero: "Mesero",
-    chef:   "Chef",
-    cajero: "Cajero",
+    administrador: "Administrador",
+    admin:         "Administrador",
+    mesero:        "Mesero",
+    chef:          "Chef",
+    cajero:        "Cajero",
   }[role] ?? role;
 
   useEffect(() => {

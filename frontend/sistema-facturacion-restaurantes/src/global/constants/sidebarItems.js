@@ -1,15 +1,19 @@
 import { ROUTES } from "./routes.js";
 
+const adminItems = [
+  { icon: "⊞",  label: "Inicio",     key: "home",       path: ROUTES.ADMIN_DASHBOARD },
+  { icon: "👤", label: "Usuarios",   key: "usuarios",   path: ROUTES.ADMIN_USUARIOS },
+  { icon: "◻",  label: "Mesas",      key: "mesas",      path: ROUTES.ADMIN_MESAS },
+  { icon: "▦",  label: "Inventario", key: "inventario", path: ROUTES.ADMIN_INVENTARIO },
+  { icon: "≡",  label: "Menús",      key: "menus",      path: ROUTES.ADMIN_MENUS },
+  { icon: "✎",  label: "Órdenes",    key: "ordenes",    path: ROUTES.ADMIN_ORDENES },
+  { icon: "▣",  label: "Informes",   key: "informes",   path: ROUTES.ADMIN_INFORMES },
+  { icon: "🛡", label: "Roles",       key: "roles",      path: ROUTES.ADMIN_ROLES },
+];
+
 export const SIDEBAR_BY_ROLE = {
-  admin: [
-    { icon: "⊞",  label: "Inicio",     key: "home",       path: ROUTES.ADMIN_DASHBOARD },
-    { icon: "👤", label: "Usuarios",   key: "usuarios",   path: ROUTES.ADMIN_USUARIOS },
-    { icon: "◻",  label: "Mesas",      key: "mesas",      path: ROUTES.ADMIN_MESAS },
-    { icon: "▦",  label: "Inventario", key: "inventario", path: ROUTES.ADMIN_INVENTARIO },
-    { icon: "≡",  label: "Menús",      key: "menus",      path: ROUTES.ADMIN_MENUS },
-    { icon: "✎",  label: "Órdenes",    key: "ordenes",    path: ROUTES.ADMIN_ORDENES },
-    { icon: "▣",  label: "Informes",   key: "informes",   path: ROUTES.ADMIN_INFORMES },
-  ],
+  administrador: adminItems,
+  admin:         adminItems,
   mesero: [
     { icon: "◻", label: "Mis Mesas", key: "mesas",   path: ROUTES.MESERO_DASHBOARD },
     { icon: "✎", label: "Órdenes",   key: "ordenes", path: ROUTES.MESERO_ORDENES },

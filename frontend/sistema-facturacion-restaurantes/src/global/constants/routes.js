@@ -8,6 +8,7 @@ export const ROUTES = {
   ADMIN_MENUS:      "/admin/menus",
   ADMIN_ORDENES:    "/admin/ordenes",
   ADMIN_INFORMES:   "/admin/informes",
+  ADMIN_ROLES:      "/admin/roles",
 
   MESERO_DASHBOARD: "/mesero",
   MESERO_ORDENES:   "/mesero/ordenes",
@@ -21,10 +22,11 @@ export const ROUTES = {
 
 export function getDashboardByRole(role) {
   const map = {
-    admin:  ROUTES.ADMIN_DASHBOARD,
-    mesero: ROUTES.MESERO_DASHBOARD,
-    chef:   ROUTES.CHEF_DASHBOARD,
-    cajero: ROUTES.CAJERO_DASHBOARD,
+    administrador: ROUTES.ADMIN_DASHBOARD,
+    admin:         ROUTES.ADMIN_DASHBOARD,
+    mesero:        ROUTES.MESERO_DASHBOARD,
+    chef:          ROUTES.CHEF_DASHBOARD,
+    cajero:        ROUTES.CAJERO_DASHBOARD,
   };
   return map[role] ?? ROUTES.LOGIN;
 }

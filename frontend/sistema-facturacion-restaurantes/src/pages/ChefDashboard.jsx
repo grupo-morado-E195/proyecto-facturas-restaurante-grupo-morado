@@ -1,77 +1,157 @@
+import { useState, useEffect, useCallback } from "react";
+import Swal from "sweetalert2";
 import DashboardLayout from "../templates/DashboardLayout.jsx";
 import PageHeader      from "../global/components/PageHeader.jsx";
 import Badge           from "../global/components/Badge.jsx";
 import Button          from "../global/components/Button.jsx";
-
-const ORDENES = [
-  {
-    id: "#042",
-    mesa: 3,
-    platos: ["Bandeja Paisa", "Jugo de Lulo"],
-    estado: "pendiente",
-    tiempo: "3 min",
-  },
-  {
-    id: "#041",
-    mesa: 7,
-    platos: ["Ajiaco", "Arepa de Choclo x2"],
-    estado: "en_preparacion",
-    tiempo: "12 min",
-  },
-  {
-    id: "#039",
-    mesa: 5,
-    platos: ["Sancocho de Gallina"],
-    estado: "lista",
-    tiempo: "20 min",
-  },
-];
+import { useWebSocket }    from "../global/hooks/useWebSocket.js";
+import { getOrders, updateOrderStatus } from "../modules/order/orderService.js";
 
 const ESTADO_CONFIG = {
-  pendiente:      { badge: <Badge variant="danger">Pendiente</Badge>,       accent: "#D64035" },
-  en_preparacion: { badge: <Badge variant="warning">En preparación</Badge>, accent: "#E8A020" },
-  lista:          { badge: <Badge variant="success">Lista</Badge>,          accent: "#2E9E5B" },
+  PENDIENTE:      { badge: <Badge variant="danger">Pendiente</Badge>,       accent: "#D64035" },
+  EN_PREPARACION: { badge: <Badge variant="warning">En preparación</Badge>, accent: "#E8A020" },
+  LISTA:          { badge: <Badge variant="success">Lista</Badge>,          accent: "#2E9E5B" },
 };
 
 export default function ChefDashboard() {
+  const [ordenes,  setOrdenes]  = useState([]);
+  const [loading,  setLoading]  = useState(false);
+  const [updating, setUpdating] = useState(null);
+
+  const fetchOrdenes = useCallback(async () => {
+    setLoading(true);
+    try {
+      // El chef ve las órdenes PENDIENTES y EN_PREPARACION y LISTAS
+      const [pendientes, preparacion, listas] = await Promise.all([
+        getOrders({ status: "PENDIENTE",      page: 0, size: 20 }),
+        getOrders({ status: "EN_PREPARACION", page: 0, size: 20 }),
+        getOrders({ status: "LISTA",          page: 0, size: 20 }),
+      ]);
+      const todas = [
+        ...(pendientes.content   ?? []),
+        ...(preparacion.content  ?? []),
+        ...(listas.content       ?? []),
+      ];
+      // Ordena: pendientes primero, luego en preparación, luego listas
+      const ORDEN = { PENDIENTE: 0, EN_PREPARACION: 1, LISTA: 2 };
+      todas.sort((a, b) => (ORDEN[a.estado] ?? 3) - (ORDEN[b.estado] ?? 3));
+      setOrdenes(todas);
+    } catch {
+      // Silencia errores de carga del chef
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchOrdenes(); }, [fetchOrdenes]);
+
+  // WebSocket: recarga cuando lleguen eventos de órdenes
+  useWebSocket("/topic/ordenes", () => { fetchOrdenes(); });
+
+  const handleIniciar = async (ordenId) => {
+    setUpdating(ordenId);
+    try {
+      await updateOrderStatus(ordenId, "EN_PREPARACION");
+      fetchOrdenes();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.message ?? "No se pudo actualizar el estado.",
+        confirmButtonColor: "#E87722",
+      });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleMarcarLista = async (ordenId) => {
+    setUpdating(ordenId);
+    try {
+      await updateOrderStatus(ordenId, "LISTA");
+      fetchOrdenes();
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.response?.data?.message ?? "No se pudo actualizar el estado.",
+        confirmButtonColor: "#E87722",
+      });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  if (loading && ordenes.length === 0) {
+    return (
+      <DashboardLayout screenName="Cola de Órdenes" activeItem="ordenes">
+        <PageHeader title="Cola de Órdenes" />
+        <p className="text-center text-gray-400 py-12 text-sm">Cargando órdenes...</p>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout screenName="Cola de Órdenes" activeItem="ordenes">
       <PageHeader title="Cola de Órdenes" />
 
-      <div className="space-y-3">
-        {ORDENES.map((o) => {
-          const { badge, accent } = ESTADO_CONFIG[o.estado] ?? {};
-          return (
-            <div
-              key={o.id}
-              className="bg-white rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 border-l-4"
-              style={{ borderLeftColor: accent }}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="font-black text-gray-900">{o.id}</span>
-                  <span className="text-gray-500 text-sm">Mesa {o.mesa}</span>
-                  {badge}
+      {ordenes.length === 0 ? (
+        <div className="bg-white rounded-xl p-8 shadow-sm text-center">
+          <p className="text-gray-400 text-sm">No hay órdenes activas en este momento.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {ordenes.map((o) => {
+            const { badge, accent } = ESTADO_CONFIG[o.estado] ?? {};
+            const isUpdating = updating === o.id;
+            return (
+              <div
+                key={o.id}
+                className="bg-white rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 border-l-4"
+                style={{ borderLeftColor: accent }}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                    <span className="font-black text-gray-900">
+                      #{String(o.id).padStart(3, "0")}
+                    </span>
+                    <span className="text-gray-500 text-sm">Mesa {o.numeroMesa}</span>
+                    {badge}
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">
+                    Mesero: {o.nombreMesero ?? "—"}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-600 truncate">{o.platos.join(" · ")}</p>
-              </div>
 
-              <div className="flex sm:flex-col items-center sm:items-end gap-3">
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-3.5 h-3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {o.tiempo}
+                <div className="flex sm:flex-col items-center sm:items-end gap-3">
+                  {o.estado === "PENDIENTE"      && (
+                    <Button
+                      small
+                      onClick={() => handleIniciar(o.id)}
+                      disabled={isUpdating}
+                    >
+                      {isUpdating ? "..." : "Iniciar"}
+                    </Button>
+                  )}
+                  {o.estado === "EN_PREPARACION" && (
+                    <Button
+                      small
+                      variant="success"
+                      onClick={() => handleMarcarLista(o.id)}
+                      disabled={isUpdating}
+                    >
+                      {isUpdating ? "..." : "Marcar Lista"}
+                    </Button>
+                  )}
+                  {o.estado === "LISTA" && (
+                    <Badge variant="success">Lista para entregar</Badge>
+                  )}
                 </div>
-                {o.estado === "pendiente"      && <Button small>Iniciar</Button>}
-                {o.estado === "en_preparacion" && <Button small variant="success">Marcar Lista</Button>}
-                {o.estado === "lista"          && <Badge variant="success">Entregada</Badge>}
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </DashboardLayout>
   );
 }

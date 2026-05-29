@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../global/hooks/useAuth.js";
 import { getDashboardByRole } from "../../global/constants/routes.js";
+import { requestPasswordReset } from "../../global/services/authService.js";
 import Input  from "../../global/components/Input.jsx";
 import Button from "../../global/components/Button.jsx";
 
 export default function Login() {
-  const { login, loading } = useAuth();
+  const { login, loading, requiresPasswordChange } = useAuth();
   const navigate = useNavigate();
 
   const [showForgot, setShowForgot] = useState(false);
@@ -14,14 +15,43 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState(null);
 
+  // Estado para flujo de recuperación de contraseña
+  const [forgotEmail,   setForgotEmail]   = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(null);
+  const [forgotError,   setForgotError]   = useState(null);
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const user = await login(email, password);
+  e.preventDefault();
+  setError(null);
+  try {
+    const { user, requiresPasswordChange } = await login(email, password);
+    if (requiresPasswordChange) {
+      navigate("/update-password", { replace: true });
+    } else {
       navigate(getDashboardByRole(user.rol), { replace: true });
+    }
+  } catch (err) {
+    setError(err.message ?? "Credenciales incorrectas");
+  }
+};
+
+  const handleForgot = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError(null);
+    setForgotSuccess(null);
+    try {
+      const data = await requestPasswordReset(forgotEmail);
+      setForgotSuccess(data.message ?? "Se ha enviado una contraseña temporal a tu correo.");
     } catch (err) {
-      setError(err.message ?? "Credenciales incorrectas");
+      setForgotError(
+        err.response?.data?.message ??
+        err.message ??
+        "No se pudo enviar el correo. Verifica el email ingresado."
+      );
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -65,27 +95,6 @@ export default function Login() {
               </div>
               <span className="text-gray-300 text-sm">{f}</span>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-10 p-4 bg-white/5 rounded-xl border border-white/10 w-full max-w-xs text-left">
-          <p className="text-[#FFA94D] text-xs font-bold mb-2 uppercase tracking-wide">
-            Credenciales de prueba
-          </p>
-          {[
-            { role: "Admin",  email: "admin@sfr.com",   pass: "admin123"  },
-            { role: "Mesero", email: "mesero@sfr.com",  pass: "mesero123" },
-            { role: "Chef",   email: "chef@sfr.com",    pass: "chef123"   },
-            { role: "Cajero", email: "cajero@sfr.com",  pass: "cajero123" },
-          ].map(({ role, email: e, pass }) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => { setEmail(e); setPassword(pass); setShowForgot(false); }}
-              className="w-full text-left py-1.5 text-xs text-gray-400 hover:text-white transition-colors"
-            >
-              <span className="text-white font-semibold">{role}:</span> {e}
-            </button>
           ))}
         </div>
       </div>
@@ -160,7 +169,7 @@ export default function Login() {
           ) : (
             <>
               <button
-                onClick={() => setShowForgot(false)}
+                onClick={() => { setShowForgot(false); setForgotSuccess(null); setForgotError(null); setForgotEmail(""); }}
                 className="flex items-center gap-1.5 text-gray-500 text-sm mb-6 hover:text-gray-700 transition-colors"
               >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -172,20 +181,32 @@ export default function Login() {
               <div className="mb-8">
                 <h2 className="text-2xl font-black text-gray-900">Recuperar Contraseña</h2>
                 <p className="text-gray-500 text-sm mt-1">
-                  Ingresa tu correo para recibir instrucciones
+                  Ingresa tu correo para recibir una contraseña temporal
                 </p>
               </div>
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={handleForgot}>
                 <Input
                   label="Correo electrónico"
                   type="email"
                   placeholder="correo@restaurante.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
                   required
                 />
-                <Button type="submit" fullWidth>
-                  Enviar instrucciones
+                <Button type="submit" fullWidth disabled={forgotLoading}>
+                  {forgotLoading ? "Enviando..." : "Enviar contraseña temporal"}
                 </Button>
               </form>
+              {forgotSuccess && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-xs">{forgotSuccess}</p>
+                </div>
+              )}
+              {forgotError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-xs"><strong>Error:</strong> {forgotError}</p>
+                </div>
+              )}
             </>
           )}
         </div>

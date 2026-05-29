@@ -1,31 +1,56 @@
+import { useState } from "react";
+import Swal   from "sweetalert2";
 import Button from "../../../global/components/Button.jsx";
+import { invoiceOrder } from "../billingService.js";
 
-const SAMPLE_ITEMS = [
-  { nombre: "Bandeja Paisa", cantidad: 1, precioUnitario: 38000 },
-  { nombre: "Ajiaco",        cantidad: 1, precioUnitario: 32000 },
-  { nombre: "Jugo de Lulo",  cantidad: 2, precioUnitario: 8000  },
-];
-
-const TAX_RATE = 0.08;
-
-function fmt(n) {
-  return `$${n.toLocaleString("es-CO")}`;
-}
+const fmt = (n) =>
+  n !== undefined ? `$${Number(n).toLocaleString("es-CO")}` : "-";
 
 export default function BillingForm({
-  orderId = "#042",
-  mesa = 3,
-  mesero = "Laura Martínez",
+  ordenId,
+  mesa,
+  mesero,
+  ordenDetalle,
   onCancel,
+  onSuccess,
 }) {
-  const subtotal = SAMPLE_ITEMS.reduce((s, i) => s + i.cantidad * i.precioUnitario, 0);
-  const impuesto = Math.round(subtotal * TAX_RATE);
-  const total    = subtotal + impuesto;
+  const [metodoPago, setMetodoPago] = useState("efectivo");
+  const [loading,    setLoading]    = useState(false);
+  const [error,      setError]      = useState(null);
+
+  const items    = ordenDetalle?.details ?? [];
+  const subtotal = ordenDetalle?.subtotal;
+  const impuesto = ordenDetalle?.consumptionTax;
+  const total    = ordenDetalle?.total;
+
+  const handleConfirm = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await invoiceOrder(ordenId);
+      await Swal.fire({
+        icon:             "success",
+        title:            "¡Facturación exitosa!",
+        text:             `Orden #${String(ordenId).padStart(3, "0")} facturada correctamente.`,
+        confirmButtonColor: "#E87722",
+      });
+      onSuccess?.();
+    } catch (err) {
+      setError(
+        err.response?.data?.message ??
+        err.response?.data?.error ??
+        err.message ??
+        "Error al facturar la orden."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
       <div className="bg-gray-50 rounded-lg px-4 py-3 mb-4 text-sm">
-        <p className="font-bold text-gray-800">Orden {orderId}</p>
+        <p className="font-bold text-gray-800">Orden #{String(ordenId).padStart(3, "0")}</p>
         <p className="text-gray-500 text-xs mt-0.5">Mesa {mesa} · Mesero: {mesero}</p>
       </div>
 
@@ -33,17 +58,21 @@ export default function BillingForm({
         <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
           Detalle de la orden
         </p>
-        {SAMPLE_ITEMS.map((item) => (
-          <div
-            key={item.nombre}
-            className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0 text-sm"
-          >
-            <span className="text-gray-700">{item.cantidad}x {item.nombre}</span>
-            <span className="font-semibold text-gray-800">
-              {fmt(item.cantidad * item.precioUnitario)}
-            </span>
-          </div>
-        ))}
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-2">Cargando detalle...</p>
+        ) : (
+          items.map((item, i) => (
+            <div
+              key={i}
+              className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0 text-sm"
+            >
+              <span className="text-gray-700">{item.cantidad}x {item.nombrePlato}</span>
+              <span className="font-semibold text-gray-800">
+                {fmt(item.subtotalDetalle)}
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
       <div className="border-t-2 border-gray-200 pt-3 space-y-1.5 mb-5">
@@ -76,7 +105,8 @@ export default function BillingForm({
                 type="radio"
                 name="metodoPago"
                 value={m.toLowerCase()}
-                defaultChecked={m === "Efectivo"}
+                checked={metodoPago === m.toLowerCase()}
+                onChange={(e) => setMetodoPago(e.target.value)}
                 className="accent-[#E87722]"
               />
               <span className="text-sm text-gray-700">{m}</span>
@@ -85,9 +115,17 @@ export default function BillingForm({
         </div>
       </div>
 
+      {error && (
+        <p className="text-xs text-red-500 mb-3 px-0.5">{error}</p>
+      )}
+
       <div className="flex gap-3">
-        <Button type="submit" fullWidth>Confirmar facturación</Button>
-        <Button variant="ghost" fullWidth onClick={onCancel}>Cancelar</Button>
+        <Button type="button" fullWidth onClick={handleConfirm} disabled={loading}>
+          {loading ? "Procesando..." : "Confirmar facturación"}
+        </Button>
+        <Button variant="ghost" fullWidth onClick={onCancel} disabled={loading}>
+          Cancelar
+        </Button>
       </div>
     </div>
   );

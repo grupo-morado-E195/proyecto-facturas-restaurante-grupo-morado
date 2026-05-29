@@ -4,6 +4,8 @@ import com.grupo_morado.sistema_facturacion_inventario.application.ports.out.Use
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities.User;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.repository.UserDAO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -21,6 +23,16 @@ public class UserAdapter implements UserProviderPort {
     @Override
     public Optional<User> findByEmail(String email) {
         return userDAO.findByEmail(email);
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return userDAO.findById(id);
+    }
+
+    @Override
+    public Page<User> findAll(Pageable pageable) {
+        return userDAO.findAll(pageable);
     }
 
     @Override

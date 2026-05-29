@@ -56,4 +56,15 @@ public class User extends BaseEntity {
      */
     @Column(name = "debe_cambiar_contrasena", nullable = false)
     private boolean mustChangePassword = false;
+
+    // ─── Campo para invalidación de JWT (logout / cambio de contraseña) ───────
+
+    /**
+     * Versión del token del usuario.
+     * Se incrementa en cada logout, cambio de contraseña o recuperación de contraseña,
+     * invalidando automáticamente todos los JWT emitidos con versiones anteriores.
+     * El JWT incluye este valor en sus claims; el filtro lo compara en cada request.
+     */
+    @Column(name = "token_version", nullable = false)
+    private Long tokenVersion = 0L;
 }

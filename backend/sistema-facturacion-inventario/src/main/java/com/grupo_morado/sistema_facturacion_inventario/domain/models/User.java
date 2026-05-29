@@ -29,7 +29,6 @@ public class User {
     }
 
     // ─── Métodos de validación de instancia ──────────────────────────────────
-
     public void validateEmail(String email){
         if(email == null || email.isBlank()){
             throw new InvalidEmailException("Correo electronico es nulo o vacío.");
@@ -97,18 +96,39 @@ public class User {
     }
 
     /**
-     * Valida el formato de una contraseña reutilizando las reglas de dominio.
-     * Útil para flujos donde no se crea un User completo (ej. actualización de contraseña).
+     * Valida el formato y complejidad de una contraseña elegida por el usuario.
+     * Se aplica en flujos de creación o cambio de contraseña voluntario.
+     *
+     * <p>Reglas:
+     * <ul>
+     *   <li>No nula ni vacía.</li>
+     *   <li>Entre 8 y 24 caracteres.</li>
+     *   <li>Al menos una letra mayúscula (A-Z).</li>
+     *   <li>Al menos una letra minúscula (a-z).</li>
+     *   <li>Al menos un carácter especial (!@#$%&amp;*.,-).</li>
+     * </ul>
      *
      * @param password Contraseña a validar.
-     * @throws InvalidPasswordException si el formato es inválido.
+     * @throws InvalidPasswordException si el formato o complejidad es inválido.
      */
     public static void validatePasswordFormat(String password) {
         if (password == null || password.isBlank()) {
-            throw new InvalidPasswordException("Contraseña es nula o vacía.");
+            throw new InvalidPasswordException("La contraseña no puede estar vacía.");
         }
-        if (password.length() >= 254) {
-            throw new InvalidPasswordException("Contraseña '" + password + "' muy larga.");
+        if (password.length() < 8) {
+            throw new InvalidPasswordException("La contraseña debe tener al menos 8 caracteres.");
+        }
+        if (password.length() > 24) {
+            throw new InvalidPasswordException("La contraseña no puede superar los 24 caracteres.");
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            throw new InvalidPasswordException("La contraseña debe contener al menos una letra mayúscula.");
+        }
+        if (!password.matches(".*[a-z].*")) {
+            throw new InvalidPasswordException("La contraseña debe contener al menos una letra minúscula.");
+        }
+        if (!password.matches(".*[!@#$%&*.,\\-].*")) {
+            throw new InvalidPasswordException("La contraseña debe contener al menos un carácter especial (!@#$%&*.,-).");
         }
     }
 }

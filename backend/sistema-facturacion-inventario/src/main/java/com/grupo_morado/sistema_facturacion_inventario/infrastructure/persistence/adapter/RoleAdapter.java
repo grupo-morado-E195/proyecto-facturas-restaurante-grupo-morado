@@ -6,6 +6,7 @@ import com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistenc
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -17,5 +18,20 @@ public class RoleAdapter implements RoleProviderPort {
     @Override
     public Optional<Role> findById(Long id) {
         return roleDAO.findById(id);
+    }
+
+    @Override
+    public List<Role> findAll() {
+        return roleDAO.findAll();
+    }
+
+    @Override
+    public Role save(Role role) {
+        return roleDAO.save(role);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        roleDAO.deleteById(id);
     }
 }
