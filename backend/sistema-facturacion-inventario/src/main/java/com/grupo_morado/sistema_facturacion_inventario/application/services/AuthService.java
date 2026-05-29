@@ -8,7 +8,11 @@ import com.grupo_morado.sistema_facturacion_inventario.application.ports.out.Ema
 import com.grupo_morado.sistema_facturacion_inventario.application.ports.out.PasswordEncryptPort;
 import com.grupo_morado.sistema_facturacion_inventario.application.ports.out.RoleProviderPort;
 import com.grupo_morado.sistema_facturacion_inventario.application.ports.out.UserProviderPort;
+import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.InvalidCurrentPasswordException;
+import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.InvalidEmailException;
 import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.NotFoundException;
+import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.PasswordConfirmationMismatchException;
+import com.grupo_morado.sistema_facturacion_inventario.domain.exceptions.PasswordSameAsCurrentException;
 import com.grupo_morado.sistema_facturacion_inventario.domain.models.User;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.AuthRegisterDTO;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.mappers.AuthenticationMapper;
@@ -71,11 +75,12 @@ public class AuthService implements AuthUseCase {
         // 1. Valida formato de email — lanza InvalidEmailException si es inválido
         User.validateEmailFormat(email);
 
-        // 2. Buscar usuario en base de datos
+        // 2. Buscar usuario en base de datos — si no existe, responder con mensaje genérico
+        //    para no filtrar información sobre qué correos están registrados (SFR-001).
         com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities.User userEntity =
                 userProviderPort.findByEmail(email)
-                        .orElseThrow(() -> new NotFoundException(
-                                "No se encontró ningún usuario con el correo '" + email + "'."
+                        .orElseThrow(() -> new InvalidEmailException(
+                                "Los datos ingresados son incorrectos."
                         ));
 
         // 3. Generar contraseña temporal segura
@@ -88,6 +93,7 @@ public class AuthService implements AuthUseCase {
                 LocalDateTime.now().plusMinutes(TEMPORARY_PASSWORD_EXPIRATION_MINUTES)
         );
         userEntity.setMustChangePassword(true);
+        invalidateTokens(userEntity);      // Invalida JWTs anteriores del usuario
         userProviderPort.save(userEntity);
 
         // 5. Enviar correo con contraseña temporal en texto plano
@@ -123,15 +129,100 @@ public class AuthService implements AuthUseCase {
         userEntity.setTemporaryPassword(null);
         userEntity.setTemporaryPasswordExpiration(null);
         userEntity.setMustChangePassword(false);
+        invalidateTokens(userEntity);      // Invalida JWTs anteriores del usuario
 
         userProviderPort.save(userEntity);
     }
 
     /**
-     * Genera una contraseña temporal criptográficamente segura usando {@link SecureRandom}.
+     * Cambia la contraseña de un usuario autenticado desde su panel de usuario.
      *
-     * @return Contraseña temporal de {@value TEMPORARY_PASSWORD_LENGTH} caracteres.
+     * <p>Flujo de validaciones:
+     * <ol>
+     *   <li>Valida complejidad de la nueva contraseña (dominio).</li>
+     *   <li>Verifica que confirmación coincide con la nueva contraseña.</li>
+     *   <li>Busca el usuario en base de datos.</li>
+     *   <li>Verifica que la contraseña actual proporcionada coincide con la almacenada.</li>
+     *   <li>Verifica que la nueva contraseña sea distinta a la actual.</li>
+     *   <li>Hashea y persiste la nueva contraseña; limpia estados temporales si existieran.</li>
+     * </ol>
      */
+    @Override
+    @Transactional
+    public void changePassword(String email, String currentPassword, String newPassword, String confirmPassword) {
+
+        // 1. Validar complejidad de la nueva contraseña
+        User.validatePasswordFormat(newPassword);
+
+        // 2. Validar que confirmación coincide con la nueva contraseña
+        if (!newPassword.equals(confirmPassword)) {
+            throw new PasswordConfirmationMismatchException(
+                    "La confirmación de contraseña no coincide con la nueva contraseña."
+            );
+        }
+
+        // 3. Buscar usuario en base de datos
+        com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities.User userEntity =
+                userProviderPort.findByEmail(email)
+                        .orElseThrow(() -> new NotFoundException(
+                                "No se encontró ningún usuario con el correo '" + email + "'."
+                        ));
+
+        // 4. Verificar que la contraseña actual proporcionada es correcta
+        if (!passwordEncryptPort.matches(currentPassword, userEntity.getPassword())) {
+            throw new InvalidCurrentPasswordException(
+                    "La contraseña actual proporcionada es incorrecta."
+            );
+        }
+
+        // 5. Verificar que la nueva contraseña sea distinta a la actual
+        if (passwordEncryptPort.matches(newPassword, userEntity.getPassword())) {
+            throw new PasswordSameAsCurrentException(
+                    "La nueva contraseña no puede ser igual a la contraseña actual."
+            );
+        }
+
+        // 6. Hashear y persistir; limpiar cualquier estado de recuperación temporal
+        userEntity.setPassword(passwordEncryptPort.encryptPassword(newPassword));
+        userEntity.setTemporaryPassword(null);
+        userEntity.setTemporaryPasswordExpiration(null);
+        userEntity.setMustChangePassword(false);
+        invalidateTokens(userEntity);      // Invalida JWTs anteriores del usuario
+        userProviderPort.save(userEntity);
+    }
+
+    /**
+     * Cierra la sesión del usuario autenticado invalidando todos sus JWT activos.
+     *
+     * <p>Incrementa {@code tokenVersion} en base de datos. El filtro JWT compara este
+     * valor en cada request y rechaza tokens con versión anterior con HTTP 401.
+     */
+    @Override
+    @Transactional
+    public void logout(String email) {
+        com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities.User userEntity =
+                userProviderPort.findByEmail(email)
+                        .orElseThrow(() -> new NotFoundException(
+                                "No se encontró ningún usuario con el correo '" + email + "'."
+                        ));
+        invalidateTokens(userEntity);
+        userProviderPort.save(userEntity);
+    }
+
+    // ─── Métodos privados ─────────────────────────────────────────────────────
+
+    /**
+     * Incrementa {@code tokenVersion} del usuario, invalidando todos sus JWT activos.
+     * Llamar antes de {@code userProviderPort.save()} en cualquier operación que deba
+     * cerrar sesión: logout, cambio de contraseña, recuperación de contraseña.
+     *
+     * @param userEntity Entidad usuario a actualizar (se modifica en memoria; el llamador persiste).
+     */
+    private void invalidateTokens(
+            com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.entities.User userEntity) {
+        userEntity.setTokenVersion(userEntity.getTokenVersion() + 1);
+    }
+
     private String generateSecureTemporaryPassword() {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder(TEMPORARY_PASSWORD_LENGTH);

@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../global/hooks/useAuth.js";
 import { getDashboardByRole } from "../../global/constants/routes.js";
+import { requestPasswordReset } from "../../global/services/authService.js";
 import Input  from "../../global/components/Input.jsx";
 import Button from "../../global/components/Button.jsx";
 
 export default function Login() {
-  const { login, loading } = useAuth();
+  const { login, loading, requiresPasswordChange } = useAuth();
   const navigate = useNavigate();
 
   const [showForgot, setShowForgot] = useState(false);
@@ -14,14 +15,43 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState(null);
 
+  // Estado para flujo de recuperación de contraseña
+  const [forgotEmail,   setForgotEmail]   = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(null);
+  const [forgotError,   setForgotError]   = useState(null);
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const user = await login(email, password);
+  e.preventDefault();
+  setError(null);
+  try {
+    const { user, requiresPasswordChange } = await login(email, password);
+    if (requiresPasswordChange) {
+      navigate("/update-password", { replace: true });
+    } else {
       navigate(getDashboardByRole(user.rol), { replace: true });
+    }
+  } catch (err) {
+    setError(err.message ?? "Credenciales incorrectas");
+  }
+};
+
+  const handleForgot = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError(null);
+    setForgotSuccess(null);
+    try {
+      const data = await requestPasswordReset(forgotEmail);
+      setForgotSuccess(data.message ?? "Se ha enviado una contraseña temporal a tu correo.");
     } catch (err) {
-      setError(err.message ?? "Credenciales incorrectas");
+      setForgotError(
+        err.response?.data?.message ??
+        err.message ??
+        "No se pudo enviar el correo. Verifica el email ingresado."
+      );
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -31,11 +61,8 @@ export default function Login() {
         className="hidden lg:flex flex-col items-center justify-center flex-1
         bg-gradient-to-br from-[#1A0A00] to-[#3D1A00] p-12 text-center"
       >
-        <div className="w-20 h-20 rounded-2xl bg-[#E87722] flex items-center justify-center mb-6 shadow-2xl">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-10 h-10">
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+        <div className="w-32 h-32 flex items-center justify-center mb-6">
+          <img src="/logo.png" alt="Restaurante Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-white font-black text-3xl leading-tight">
           Sistema de Facturación
@@ -67,37 +94,13 @@ export default function Login() {
             </div>
           ))}
         </div>
-
-        <div className="mt-10 p-4 bg-white/5 rounded-xl border border-white/10 w-full max-w-xs text-left">
-          <p className="text-[#FFA94D] text-xs font-bold mb-2 uppercase tracking-wide">
-            Credenciales de prueba
-          </p>
-          {[
-            { role: "Admin",  email: "admin@sfr.com",   pass: "admin123"  },
-            { role: "Mesero", email: "mesero@sfr.com",  pass: "mesero123" },
-            { role: "Chef",   email: "chef@sfr.com",    pass: "chef123"   },
-            { role: "Cajero", email: "cajero@sfr.com",  pass: "cajero123" },
-          ].map(({ role, email: e, pass }) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => { setEmail(e); setPassword(pass); setShowForgot(false); }}
-              className="w-full text-left py-1.5 text-xs text-gray-400 hover:text-white transition-colors"
-            >
-              <span className="text-white font-semibold">{role}:</span> {e}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6 bg-[#FFF8F0] lg:max-w-[480px]">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 rounded-xl bg-[#E87722] flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div className="w-14 h-14 flex items-center justify-center">
+              <img src="/logo.png" alt="Restaurante Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-black text-[#1A0A00] text-lg">SFR Sistema</span>
           </div>
@@ -160,7 +163,7 @@ export default function Login() {
           ) : (
             <>
               <button
-                onClick={() => setShowForgot(false)}
+                onClick={() => { setShowForgot(false); setForgotSuccess(null); setForgotError(null); setForgotEmail(""); }}
                 className="flex items-center gap-1.5 text-gray-500 text-sm mb-6 hover:text-gray-700 transition-colors"
               >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
@@ -172,20 +175,32 @@ export default function Login() {
               <div className="mb-8">
                 <h2 className="text-2xl font-black text-gray-900">Recuperar Contraseña</h2>
                 <p className="text-gray-500 text-sm mt-1">
-                  Ingresa tu correo para recibir instrucciones
+                  Ingresa tu correo para recibir una contraseña temporal
                 </p>
               </div>
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={handleForgot}>
                 <Input
                   label="Correo electrónico"
                   type="email"
                   placeholder="correo@restaurante.com"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
                   required
                 />
-                <Button type="submit" fullWidth>
-                  Enviar instrucciones
+                <Button type="submit" fullWidth disabled={forgotLoading}>
+                  {forgotLoading ? "Enviando..." : "Enviar contraseña temporal"}
                 </Button>
               </form>
+              {forgotSuccess && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800 text-xs">{forgotSuccess}</p>
+                </div>
+              )}
+              {forgotError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-xs"><strong>Error:</strong> {forgotError}</p>
+                </div>
+              )}
             </>
           )}
         </div>

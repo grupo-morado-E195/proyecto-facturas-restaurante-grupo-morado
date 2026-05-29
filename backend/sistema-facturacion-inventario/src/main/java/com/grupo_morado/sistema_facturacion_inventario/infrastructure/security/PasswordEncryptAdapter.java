@@ -15,4 +15,10 @@ public class PasswordEncryptAdapter implements PasswordEncryptPort {
     public String encryptPassword(String password) {
         return passwordEncoder.encode(password);
     }
+
+    @Override
+    public boolean matches(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
 }
+

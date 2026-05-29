@@ -1,4 +1,4 @@
-export default function SearchBar({ placeholder = "Buscar...", filters = [] }) {
+export default function SearchBar({ placeholder = "Buscar...", filters = [], onSearch }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2 mb-4">
       <div className="relative flex-1">
@@ -18,6 +18,7 @@ export default function SearchBar({ placeholder = "Buscar...", filters = [] }) {
         <input
           type="search"
           placeholder={placeholder}
+          onChange={(e) => onSearch?.(e.target.value)}
           className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm
             bg-white focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 focus:border-[#E87722]
             transition-colors"
@@ -26,6 +27,7 @@ export default function SearchBar({ placeholder = "Buscar...", filters = [] }) {
       {filters.map((f, i) => (
         <select
           key={i}
+          onChange={(e) => f.onChange?.(e.target.value)}
           className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-700
             bg-white focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 focus:border-[#E87722]
             transition-colors cursor-pointer"

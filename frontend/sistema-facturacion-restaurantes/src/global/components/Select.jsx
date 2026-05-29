@@ -3,6 +3,8 @@ export default function Select({
   id,
   options = [],
   defaultValue,
+  value,
+  onChange,
   required = false,
   className = "",
 }) {
@@ -21,7 +23,7 @@ export default function Select({
       )}
       <select
         id={selectId}
-        defaultValue={defaultValue}
+        {...(value !== undefined ? { value, onChange } : { defaultValue })}
         className={`w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-800
           bg-white focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 focus:border-[#E87722]
           transition-colors cursor-pointer ${className}`}

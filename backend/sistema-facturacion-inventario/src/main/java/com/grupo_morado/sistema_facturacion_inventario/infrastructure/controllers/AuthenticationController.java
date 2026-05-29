@@ -6,6 +6,7 @@ import com.grupo_morado.sistema_facturacion_inventario.application.services.Auth
 import com.grupo_morado.sistema_facturacion_inventario.domain.models.User;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.AuthDTO;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.AuthRegisterDTO;
+import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.AuthChangePasswordDTO;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.AuthResetPasswordDTO;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.dtos.AuthUpdatePasswordDTO;
 import com.grupo_morado.sistema_facturacion_inventario.infrastructure.controllers.mappers.AuthenticationMapper;
@@ -70,6 +71,56 @@ public class AuthenticationController {
         log.info("Contraseña actualizada exitosamente para el usuario: {}", email);
         return ResponseEntity.ok(
                 Map.of("message", "Contraseña actualizada correctamente. Ya puedes iniciar sesión con tu nueva contraseña.")
+        );
+    }
+
+    /**
+     * Cambia la contraseña de un usuario autenticado desde su panel de usuario.
+     *
+     * <p>Requiere:
+     * <ul>
+     *   <li>Token JWT válido en el header {@code Authorization: Bearer <token>}.</li>
+     *   <li>La contraseña actual del usuario para verificar identidad.</li>
+     *   <li>La nueva contraseña y su confirmación.</li>
+     * </ul>
+     *
+     * <p>Tras el cambio exitoso, el frontend debe descartar el token actual y
+     * redirigir al login para una nueva autenticación.
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody @Valid AuthChangePasswordDTO request) {
+        // El email siempre viene del JWT autenticado, nunca del body
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        log.info("Solicitud de cambio de contraseña para el usuario autenticado: {}", email);
+        authService.changePassword(email, request.currentPassword(), request.newPassword(), request.confirmPassword());
+        log.info("Contraseña cambiada exitosamente para el usuario: {}", email);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Contraseña actualizada correctamente. Por seguridad, deberás iniciar sesión nuevamente.")
+        );
+    }
+
+    /**
+     * Cierra la sesión del usuario autenticado.
+     *
+     * <p>Invalida todos los JWT activos del usuario incrementando {@code tokenVersion}
+     * en base de datos. Requiere un token JWT válido en el header
+     * {@code Authorization: Bearer <token>}. El frontend debe descartar el token localmente
+     * tras recibir la respuesta exitosa.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        log.info("Solicitud de logout para el usuario autenticado: {}", email);
+        authService.logout(email);
+        log.info("Logout exitoso. Tokens invalidados para el usuario: {}", email);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Sesión cerrada correctamente. Por favor inicia sesión nuevamente.")
         );
     }
 }

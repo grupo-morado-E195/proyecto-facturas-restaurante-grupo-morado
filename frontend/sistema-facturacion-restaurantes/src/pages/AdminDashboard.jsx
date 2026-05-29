@@ -1,23 +1,76 @@
+import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../templates/DashboardLayout.jsx";
 import StatCard        from "../global/components/StatCard.jsx";
 import DataTable       from "../global/components/DataTable.jsx";
 import Badge           from "../global/components/Badge.jsx";
+import { useWebSocket }  from "../global/hooks/useWebSocket.js";
+import { getOrders }     from "../modules/order/orderService.js";
+import { getTables }     from "../modules/table/tableService.js";
+import { getUsers }      from "../modules/user/userService.js";
 
-const STATS = [
-  { label: "Órdenes Hoy",      value: "24",         subtitle: "+3 en la última hora",                      accentColor: "#E87722" },
-  { label: "Ventas Hoy",       value: "$1.240.000",  subtitle: "8 órdenes facturadas",                     accentColor: "#2E9E5B" },
-  { label: "Mesas Ocupadas",   value: "7 / 12",      subtitle: "5 mesas disponibles",                      accentColor: "#2E7DB5" },
-  { label: "Usuarios Activos", value: "5",           subtitle: "1 admin · 2 meseros · 1 chef · 1 cajero",  accentColor: "#E8A020" },
-];
-
-const ORDER_ROWS = [
-  ["#042", "Mesa 3", "Laura M.",  "$85.000",  <Badge variant="success">Lista</Badge>],
-  ["#041", "Mesa 7", "Carlos R.", "$120.000", <Badge variant="warning">En preparación</Badge>],
-  ["#040", "Mesa 1", "Laura M.",  "$65.000",  <Badge variant="info">Facturada</Badge>],
-  ["#039", "Mesa 5", "Carlos R.", "$95.000",  <Badge variant="info">Facturada</Badge>],
-];
+const ESTADO_BADGE = {
+  PENDIENTE:      <Badge variant="danger">Pendiente</Badge>,
+  EN_PREPARACION: <Badge variant="warning">En preparación</Badge>,
+  LISTA:          <Badge variant="success">Lista</Badge>,
+  LISTO:          <Badge variant="success">Listo</Badge>,
+  FACTURADA:      <Badge variant="info">Facturada</Badge>,
+  PAGADO:         <Badge variant="info">Pagado</Badge>,
+  CANCELADA:      <Badge>Cancelada</Badge>,
+  CANCELADO:      <Badge>Cancelado</Badge>,
+};
 
 export default function AdminDashboard() {
+  const [stats,       setStats]       = useState({ ordenes: "-", ventas: "-", mesasOcupadas: "-", mesasTotal: "-", usuarios: "-" });
+  const [ultimasOrdenes, setUltimasOrdenes] = useState([]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [ordenesRes, mesasRes, usuariosRes] = await Promise.all([
+        getOrders({ page: 0, size: 50 }),
+        getTables(0, 100),
+        getUsers(0, 100),
+      ]);
+
+      const ordenes  = ordenesRes.content ?? [];
+      const mesas    = mesasRes.content  ?? [];
+      const usuarios = usuariosRes.content ?? [];
+
+      const facturadas   = ordenes.filter((o) => o.estado === "PAGADO" || o.estado === "FACTURADA");
+      const mesasOcupadas = mesas.filter((m) => m.disponibility === "OCUPADA");
+
+      setStats({
+        ordenes:      ordenes.length,
+        ventas:       facturadas.length,
+        mesasOcupadas: mesasOcupadas.length,
+        mesasTotal:    mesas.length,
+        usuarios:      usuarios.filter((u) => u.status === "ACTIVO").length,
+      });
+
+      // Muestra las últimas 5 órdenes
+      const ultimas = ordenes.slice(0, 5).map((o) => [
+        `#${String(o.id).padStart(3, "0")}`,
+        `Mesa ${o.numeroMesa}`,
+        o.nombreMesero ?? "—",
+        "—",
+        ESTADO_BADGE[o.estado] ?? <Badge>{o.estado}</Badge>,
+      ]);
+      setUltimasOrdenes(ultimas);
+    } catch {
+      // Silencia errores del dashboard
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  useWebSocket("/topic/ordenes", () => { fetchData(); });
+
+  const STATS = [
+    { label: "Órdenes Hoy",      value: String(stats.ordenes),                                subtitle: `${stats.ventas} facturadas`,                           accentColor: "#E87722" },
+    { label: "Ventas Hoy",       value: `${stats.ventas} facturas`,                           subtitle: "Órdenes facturadas",                                   accentColor: "#2E9E5B" },
+    { label: "Mesas Ocupadas",   value: `${stats.mesasOcupadas} / ${stats.mesasTotal}`,      subtitle: `${Number(stats.mesasTotal) - Number(stats.mesasOcupadas)} mesas disponibles`, accentColor: "#2E7DB5" },
+    { label: "Usuarios Activos", value: String(stats.usuarios),                               subtitle: "Usuarios activos en el sistema",                        accentColor: "#E8A020" },
+  ];
+
   return (
     <DashboardLayout screenName="Panel de Administración" activeItem="home">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
@@ -30,7 +83,7 @@ export default function AdminDashboard() {
         <h2 className="font-bold text-gray-900 mb-4 text-sm">Últimas Órdenes</h2>
         <DataTable
           columns={["# Orden", "Mesa", "Mesero", "Total", "Estado"]}
-          rows={ORDER_ROWS}
+          rows={ultimasOrdenes.length > 0 ? ultimasOrdenes : [["—", "—", "—", "—", "—"]]}
         />
       </div>
     </DashboardLayout>

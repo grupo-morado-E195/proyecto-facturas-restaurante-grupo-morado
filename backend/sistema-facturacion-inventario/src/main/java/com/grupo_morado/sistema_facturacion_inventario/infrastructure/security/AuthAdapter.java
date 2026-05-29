@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,23 +34,9 @@ public class AuthAdapter implements AuthProviderPort {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Autentica al usuario con email y contraseña.
-     *
-     * <p>Flujo:
-     * <ol>
-     *   <li>Intenta la autenticación normal con Spring Security.</li>
-     *   <li>Si falla con credenciales inválidas, verifica si existe una contraseña temporal activa.</li>
-     *   <li>Si la contraseña temporal es válida y no ha expirado, genera JWT con
-     *       {@code requiresPasswordChange = true}.</li>
-     *   <li>Si la contraseña temporal expiró, lanza {@link TemporaryPasswordExpiredException}.</li>
-     *   <li>Si no hay contraseña temporal, relanza {@link BadCredentialsException}.</li>
-     * </ol>
-     */
     @Override
     public AuthLoginResultDTO authenticate(String email, String password) {
         try {
-            // 1. Intento de autenticación normal (contraseña principal)
             UsernamePasswordAuthenticationToken userToken =
                     new UsernamePasswordAuthenticationToken(email, password);
             Authentication authUser = authenticationManager.authenticate(userToken);
@@ -58,12 +45,13 @@ public class AuthAdapter implements AuthProviderPort {
             User user = userDetails.getUser();
             String role = extractRole(userDetails);
 
-            String token = jwtService.generateToken(user.getId(), userDetails.getUsername(), role);
-            // Login normal exitoso — requiresPasswordChange siempre false
+            String token = jwtService.generateToken(user.getId(), userDetails.getUsername(), role, user.getTokenVersion(), user.getName(), user.getLastname());
             return new AuthLoginResultDTO(token, false);
 
+        } catch (DisabledException e) {
+            log.warn("Intento de login con usuario inactivo: {}", email);
+            throw new DisabledException("El usuario se encuentra inactivo en el sistema.");
         } catch (BadCredentialsException e) {
-            // 2. Autenticación normal fallida — verificar contraseña temporal
             return authenticateWithTemporaryPassword(email, password);
         }
     }
@@ -121,7 +109,10 @@ public class AuthAdapter implements AuthProviderPort {
         String token = jwtService.generateToken(
                 userEntity.getId(),
                 userEntity.getEmail(),
-                role
+                role,
+                userEntity.getTokenVersion(),
+                userEntity.getName(),
+                userEntity.getLastname()
         );
 
         log.info("Login con contraseña temporal exitoso para el usuario: {}. Cambio de contraseña requerido.", email);

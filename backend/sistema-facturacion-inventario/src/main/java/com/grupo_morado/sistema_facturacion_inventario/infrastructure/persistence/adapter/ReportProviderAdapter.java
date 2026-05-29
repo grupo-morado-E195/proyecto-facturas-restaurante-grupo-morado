@@ -1,0 +1,48 @@
+package com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.adapter;
+
+import com.grupo_morado.sistema_facturacion_inventario.application.ports.out.ReportProviderPort;
+import com.grupo_morado.sistema_facturacion_inventario.domain.enums.OrderStatusEnum;
+import com.grupo_morado.sistema_facturacion_inventario.infrastructure.persistence.repository.OrderReportRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Adaptador de persistencia para el módulo de Informes.
+ * Implementa ReportProviderPort delegando en OrderReportRepository.
+ */
+@Component
+@RequiredArgsConstructor
+public class ReportProviderAdapter implements ReportProviderPort {
+
+    private final OrderReportRepository orderReportRepository;
+
+    @Override
+    public Optional<BigDecimal> sumTotalByDateAndStatus(LocalDate date, OrderStatusEnum status) {
+        return orderReportRepository.sumTotalByDateAndStatus(date, status);
+    }
+
+    @Override
+    public List<Object[]> findSalesByWaiterAndDate(LocalDate date, OrderStatusEnum status) {
+        return orderReportRepository.findSalesByWaiterAndDate(date, status);
+    }
+
+    @Override
+    public Optional<String> findMostSoldDishByDate(LocalDate date, OrderStatusEnum status) {
+        return orderReportRepository.findMostSoldDishByDate(date, status);
+    }
+
+    @Override
+    public Optional<String> findLeastSoldDishByDate(LocalDate date, OrderStatusEnum status) {
+        return orderReportRepository.findLeastSoldDishByDate(date, status);
+    }
+
+    @Override
+    public boolean existsByDateAndStatus(LocalDate date, OrderStatusEnum status) {
+        return orderReportRepository.existsByDateAndStatus(date, status);
+    }
+}
