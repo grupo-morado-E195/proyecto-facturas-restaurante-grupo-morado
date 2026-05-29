@@ -49,13 +49,6 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resultAuth);
     }
 
-    /**
-     * Solicita el restablecimiento de contraseña mediante contraseña temporal.
-     * <p>
-     * Si el email tiene formato inválido → 400 (INVALID_EMAIL).
-     * Si el email no existe en el sistema → 404 (NOT_FOUND).
-     * Si todo es correcto → 200 y el correo con la contraseña temporal es enviado.
-     */
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid AuthResetPasswordDTO request) {
         log.info("Solicitud de restablecimiento de contraseña para el correo: {}", request.email());
@@ -67,20 +60,8 @@ public class AuthenticationController {
         );
     }
 
-    /**
-     * Actualiza la contraseña definitiva del usuario autenticado.
-     * <p>
-     * Sirve para dos flujos:
-     * <ul>
-     *   <li>Después de iniciar sesión con contraseña temporal (requiresPasswordChange: true).</li>
-     *   <li>Cuando el usuario autenticado desea cambiar su contraseña desde su panel de usuario.</li>
-     * </ul>
-     * El email se extrae del token JWT — el usuario solo puede modificar su propia contraseña.
-     * Requiere un token JWT válido en el header {@code Authorization: Bearer <token>}.
-     */
     @PostMapping("/update-password")
     public ResponseEntity<?> updatePassword(@RequestBody @Valid AuthUpdatePasswordDTO request) {
-        // El email siempre viene del JWT autenticado, nunca del body
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
