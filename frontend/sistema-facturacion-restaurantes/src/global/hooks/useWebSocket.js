@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const WS_URL = "http://127.0.0.1:5050/ws";
+const WS_URL = import.meta.env.VITE_WS_URL || "http://127.0.0.1:5050/ws";
 
 /**
  * Hook reutilizable para suscribirse a un topic STOMP sobre SockJS.

@@ -14,8 +14,11 @@ import { getOrders, getOrderById } from "./orderService.js";
 const ESTADO_BADGE = {
   PENDIENTE:      <Badge variant="danger">Pendiente</Badge>,
   EN_PREPARACION: <Badge variant="warning">En preparación</Badge>,
-  LISTA:          <Badge variant="success">Lista</Badge>,
-  FACTURADA:      <Badge variant="info">Facturada</Badge>,
+  LISTO:          <Badge variant="success">Listo</Badge>,
+  LISTA:          <Badge variant="success">Listo</Badge>,
+  PAGADO:         <Badge variant="info">Facturado</Badge>,
+  FACTURADA:      <Badge variant="info">Facturado</Badge>,
+  CANCELADO:      <Badge>Cancelado</Badge>,
   CANCELADA:      <Badge>Cancelada</Badge>,
 };
 
@@ -23,17 +26,17 @@ const ESTADOS_FILTRO = [
   "Todos los estados",
   "Pendiente",
   "En preparación",
-  "Lista",
-  "Facturada",
-  "Cancelada",
+  "Listo",
+  "Facturado",
+  "Cancelado",
 ];
 
 const ESTADO_MAP = {
   "Pendiente":      "PENDIENTE",
   "En preparación": "EN_PREPARACION",
-  "Lista":          "LISTA",
-  "Facturada":      "FACTURADA",
-  "Cancelada":      "CANCELADA",
+  "Listo":          "LISTO",
+  "Facturado":      "PAGADO",
+  "Cancelado":      "CANCELADO",
 };
 
 export default function AdminOrdenes() {

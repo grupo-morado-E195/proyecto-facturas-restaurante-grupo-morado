@@ -37,7 +37,7 @@ export default function MeseroDashboard() {
 
       // Filtramos las órdenes activas (no facturadas ni canceladas)
       const activeOrders = (ordersRes.content ?? []).filter(
-        (o) => o.estado !== "CANCELADA" && o.estado !== "FACTURADA"
+        (o) => o.estado !== "CANCELADO" && o.estado !== "CANCELADA" && o.estado !== "PAGADO" && o.estado !== "FACTURADA"
       );
       setOrders(activeOrders);
     } catch (err) {

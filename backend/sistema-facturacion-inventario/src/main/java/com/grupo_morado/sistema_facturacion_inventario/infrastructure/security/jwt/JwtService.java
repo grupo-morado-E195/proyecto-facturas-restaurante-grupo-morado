@@ -28,13 +28,17 @@ public class JwtService {
      * @param rol          Rol del usuario.
      * @param tokenVersion Versión actual del token del usuario. Se usa para invalidar tokens anteriores
      *                     en logout, cambio de contraseña o recuperación de contraseña.
+     * @param name         Nombre del usuario.
+     * @param lastname     Apellido del usuario.
      * @return JWT firmado.
      */
-    public String generateToken(Long id, String email, String rol, Long tokenVersion) {
+    public String generateToken(Long id, String email, String rol, Long tokenVersion, String name, String lastname) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", id);
         claims.put("rol", rol);
         claims.put("tokenVersion", tokenVersion);
+        claims.put("nombre", name);
+        claims.put("apellido", lastname);
 
         Instant now = Instant.now();
         Instant expiration = now.plus(1, ChronoUnit.HOURS);

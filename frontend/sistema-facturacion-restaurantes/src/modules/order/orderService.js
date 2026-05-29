@@ -12,7 +12,7 @@ import apiClient from "../../global/services/apiClient.js";
  * @param {number} size
  */
 export async function getOrders({ status, page = 0, size = 50 } = {}) {
-  const params = { page, size, sort: "fechaCreacion,asc" };
+  const params = { page, size, sort: "createdAt,asc" };
   if (status) params.status = status;
   const { data } = await apiClient.get("ordenes", { params });
   return data; // Page<OrderSummaryResultDTO>

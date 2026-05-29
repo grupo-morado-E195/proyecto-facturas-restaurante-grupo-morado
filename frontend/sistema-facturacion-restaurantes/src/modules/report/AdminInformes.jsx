@@ -24,7 +24,7 @@ const fmt = (n) =>
   n !== undefined ? `$${Number(n).toLocaleString("es-CO")}` : "—";
 
 export default function AdminInformes() {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("sv-SE");
   const [fecha,       setFecha]       = useState(today);
   const [loading,     setLoading]     = useState(false);
   const [orders,      setOrders]      = useState([]);
@@ -38,9 +38,10 @@ export default function AdminInformes() {
       const userStored = localStorage.getItem("sfr_user");
       if (userStored) {
         const adminUser = JSON.parse(userStored);
-        if (adminUser?.name) {
-          setNombreGenerador(`${adminUser.name} ${adminUser.lastname ?? ""}`.trim());
-        }
+        const namePart = adminUser?.nombre || adminUser?.name || "";
+        const lastnamePart = adminUser?.apellido || adminUser?.lastname || "";
+        const fullName = `${namePart} ${lastnamePart}`.trim();
+        setNombreGenerador(fullName || "Administrador");
       }
     } catch (e) {
       console.error("Error reading sfr_user", e);
@@ -54,9 +55,9 @@ export default function AdminInformes() {
       const res = await getOrders({ page: 0, size: 300 });
       const allOrders = res.content ?? [];
       
-      // Filtrar órdenes por fecha seleccionada
+      // Filtrar órdenes por fecha seleccionada (usando zona horaria local segura)
       const filtered = allOrders.filter((o) => {
-        const orderDate = o.fechaCreacion?.split("T")[0];
+        const orderDate = o.fechaCreacion ? new Date(o.fechaCreacion).toLocaleDateString("sv-SE") : "";
         return orderDate === fechaSelected;
       });
       setOrders(filtered);

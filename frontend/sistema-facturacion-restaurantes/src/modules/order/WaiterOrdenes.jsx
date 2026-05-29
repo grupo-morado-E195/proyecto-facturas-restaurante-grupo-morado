@@ -15,9 +15,12 @@ import { getOrders, cancelOrder, getOrderById } from "./orderService.js";
 const ESTADO_BADGE = {
   PENDIENTE:      <Badge variant="danger">Pendiente</Badge>,
   EN_PREPARACION: <Badge variant="warning">En preparación</Badge>,
-  LISTA:          <Badge variant="success">Lista</Badge>,
-  CANCELADA:      <Badge variant="danger">Cancelada</Badge>,
-  FACTURADA:      <Badge variant="info">Facturada</Badge>,
+  LISTO:          <Badge variant="success">Listo</Badge>,
+  LISTA:          <Badge variant="success">Listo</Badge>,
+  CANCELADO:      <Badge variant="danger">Cancelado</Badge>,
+  CANCELADA:      <Badge variant="danger">Cancelado</Badge>,
+  PAGADO:         <Badge variant="info">Facturado</Badge>,
+  FACTURADA:      <Badge variant="info">Facturado</Badge>,
 };
 
 export default function MeseroOrdenes() {
@@ -36,7 +39,7 @@ export default function MeseroOrdenes() {
       const data = await getOrders({ page: 0, size: 50 });
       // Filtra las que no están canceladas ni facturadas para el mesero
       const content = (data.content ?? []).filter(
-        (o) => o.estado !== "CANCELADA" && o.estado !== "FACTURADA"
+        (o) => o.estado !== "CANCELADO" && o.estado !== "CANCELADA" && o.estado !== "PAGADO" && o.estado !== "FACTURADA"
       );
       setOrdenes(content);
     } catch (err) {

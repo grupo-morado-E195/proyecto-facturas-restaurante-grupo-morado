@@ -12,10 +12,13 @@ function loadUserFromStorage() {
     const decoded = jwtDecode(token);
     // Reconstruye el objeto user con los claims del JWT
     return {
-      id:     decoded.userId,
-      email:  decoded.sub,
-      rol:    decoded.rol?.replace("ROLE_", "").toLowerCase(),
-      nombre: decoded.sub, // fallback: el backend no incluye nombre en el JWT
+      id:       decoded.userId,
+      email:    decoded.sub,
+      rol:      decoded.rol?.replace("ROLE_", "").toLowerCase(),
+      nombre:   decoded.nombre ?? decoded.sub,
+      apellido: decoded.apellido ?? "",
+      name:     decoded.nombre ?? decoded.sub,
+      lastname: decoded.apellido ?? "",
     };
   } catch {
     return null;

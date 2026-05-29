@@ -61,11 +61,8 @@ export default function Login() {
         className="hidden lg:flex flex-col items-center justify-center flex-1
         bg-gradient-to-br from-[#1A0A00] to-[#3D1A00] p-12 text-center"
       >
-        <div className="w-20 h-20 rounded-2xl bg-[#E87722] flex items-center justify-center mb-6 shadow-2xl">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-10 h-10">
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+        <div className="w-32 h-32 flex items-center justify-center mb-6">
+          <img src="/logo.png" alt="Restaurante Logo" className="w-full h-full object-contain" />
         </div>
         <h1 className="text-white font-black text-3xl leading-tight">
           Sistema de Facturación
@@ -102,11 +99,8 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center p-6 bg-[#FFF8F0] lg:max-w-[480px]">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-3 mb-8 lg:hidden">
-            <div className="w-10 h-10 rounded-xl bg-[#E87722] flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+            <div className="w-14 h-14 flex items-center justify-center">
+              <img src="/logo.png" alt="Restaurante Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-black text-[#1A0A00] text-lg">SFR Sistema</span>
           </div>

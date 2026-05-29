@@ -45,7 +45,7 @@ public class AuthAdapter implements AuthProviderPort {
             User user = userDetails.getUser();
             String role = extractRole(userDetails);
 
-            String token = jwtService.generateToken(user.getId(), userDetails.getUsername(), role, user.getTokenVersion());
+            String token = jwtService.generateToken(user.getId(), userDetails.getUsername(), role, user.getTokenVersion(), user.getName(), user.getLastname());
             return new AuthLoginResultDTO(token, false);
 
         } catch (DisabledException e) {
@@ -110,7 +110,9 @@ public class AuthAdapter implements AuthProviderPort {
                 userEntity.getId(),
                 userEntity.getEmail(),
                 role,
-                userEntity.getTokenVersion()
+                userEntity.getTokenVersion(),
+                userEntity.getName(),
+                userEntity.getLastname()
         );
 
         log.info("Login con contraseña temporal exitoso para el usuario: {}. Cambio de contraseña requerido.", email);

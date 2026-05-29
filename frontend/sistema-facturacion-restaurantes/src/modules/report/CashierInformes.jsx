@@ -23,7 +23,7 @@ const fmt = (n) =>
   n !== undefined ? `$${Number(n).toLocaleString("es-CO")}` : "—";
 
 export default function CajeroInformes() {
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("sv-SE");
   const [loading,     setLoading]     = useState(false);
   const [orders,      setOrders]      = useState([]);
   const [orderDetails, setOrderDetails] = useState([]);
@@ -36,9 +36,10 @@ export default function CajeroInformes() {
       const userStored = localStorage.getItem("sfr_user");
       if (userStored) {
         const cajeroUser = JSON.parse(userStored);
-        if (cajeroUser?.name) {
-          setNombreGenerador(`${cajeroUser.name} ${cajeroUser.lastname ?? ""}`.trim());
-        }
+        const namePart = cajeroUser.nombre || cajeroUser.name || "";
+        const lastnamePart = cajeroUser.apellido || cajeroUser.lastname || "";
+        const fullName = `${namePart} ${lastnamePart}`.trim();
+        setNombreGenerador(fullName || "Cajero");
       }
     } catch (e) {
       console.error("Error reading sfr_user", e);
@@ -51,9 +52,9 @@ export default function CajeroInformes() {
       const res = await getOrders({ page: 0, size: 300 });
       const allOrders = res.content ?? [];
       
-      // Filtrar órdenes por la fecha de hoy
+      // Filtrar órdenes por la fecha de hoy (usando zona horaria local segura)
       const filtered = allOrders.filter((o) => {
-        const orderDate = o.fechaCreacion?.split("T")[0];
+        const orderDate = o.fechaCreacion ? new Date(o.fechaCreacion).toLocaleDateString("sv-SE") : "";
         return orderDate === today;
       });
       setOrders(filtered);

@@ -8,10 +8,13 @@ import { jwtDecode } from "jwt-decode";
 function extractUserFromToken(token) {
   const decoded = jwtDecode(token);
   return {
-    id:     decoded.userId,
-    email:  decoded.sub,
-    rol:    decoded.rol?.replace("ROLE_", "").toLowerCase(),      // admin | mesero | chef | cajero
-    nombre: decoded.sub,     // el backend no incluye nombre en el JWT; se usa email como fallback
+    id:       decoded.userId,
+    email:    decoded.sub,
+    rol:      decoded.rol?.replace("ROLE_", "").toLowerCase(),      // admin | mesero | chef | cajero
+    nombre:   decoded.nombre ?? decoded.sub,
+    apellido: decoded.apellido ?? "",
+    name:     decoded.nombre ?? decoded.sub,
+    lastname: decoded.apellido ?? "",
   };
 }
 

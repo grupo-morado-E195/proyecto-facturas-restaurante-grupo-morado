@@ -19,7 +19,7 @@ export default function Facturacion() {
   const fetchOrdenesListas = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getOrders({ status: "LISTA", page: 0, size: 50 });
+      const data = await getOrders({ status: "LISTO", page: 0, size: 50 });
       setOrdenesListas(data.content ?? []);
     } catch (err) {
       console.error("No se pudieron cargar las órdenes:", err);
@@ -34,6 +34,17 @@ export default function Facturacion() {
   // WebSocket: escucha eventos de facturación y de órdenes
   useWebSocket("/topic/ordenes",     () => { fetchOrdenesListas(); });
   useWebSocket("/topic/facturacion", () => { fetchOrdenesListas(); });
+
+  const handleSelectOrden = async (orden) => {
+    try {
+      const detalle = await getOrderById(orden.id);
+      setSelectedOrden(orden);
+      setOrdenDetalle(detalle);
+    } catch {
+      setSelectedOrden(orden);
+      setOrdenDetalle(null);
+    }
+  };
 
   const handleFacturar = async (orden) => {
     try {
@@ -67,21 +78,32 @@ export default function Facturacion() {
             <p className="text-center text-gray-400 py-8 text-sm">No hay órdenes listas.</p>
           ) : (
             <div className="divide-y divide-gray-100">
-              {ordenesListas.map((o) => (
-                <div key={o.id} className="py-4 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm">
-                      #{String(o.id).padStart(3, "0")} · Mesa {o.numeroMesa}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Mesero: {o.nombreMesero ?? "—"}
-                    </p>
+              {ordenesListas.map((o) => {
+                const isSelected = selectedOrden?.id === o.id;
+                return (
+                  <div
+                    key={o.id}
+                    onClick={() => handleSelectOrden(o)}
+                    className={`py-3 px-3 flex items-center justify-between gap-3 cursor-pointer rounded-xl transition-all duration-150 mb-1.5 border-2
+                      ${isSelected 
+                        ? "bg-orange-50/50 border-[#E87722] shadow-sm" 
+                        : "border-transparent hover:bg-gray-50"
+                      }`}
+                  >
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">
+                        #{String(o.id).padStart(3, "0")} · Mesa {o.numeroMesa}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Mesero: {o.nombreMesero ?? "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                      <Button small onClick={() => handleFacturar(o)}>Facturar</Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Button small onClick={() => handleFacturar(o)}>Facturar</Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

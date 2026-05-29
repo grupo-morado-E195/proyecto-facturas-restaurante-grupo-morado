@@ -2,11 +2,14 @@ import Modal from "../../../global/components/Modal.jsx";
 import Badge from "../../../global/components/Badge.jsx";
 
 const ESTADO_BADGE = {
-  EN_PREPARACION: <Badge variant="warning">En preparación</Badge>,
-  LISTA:          <Badge variant="success">Lista</Badge>,
-  CANCELADA:      <Badge variant="danger">Cancelada</Badge>,
   PENDIENTE:      <Badge variant="danger">Pendiente</Badge>,
-  FACTURADA:      <Badge variant="info">Facturada</Badge>,
+  EN_PREPARACION: <Badge variant="warning">En preparación</Badge>,
+  LISTO:          <Badge variant="success">Listo</Badge>,
+  LISTA:          <Badge variant="success">Listo</Badge>,
+  CANCELADO:      <Badge variant="danger">Cancelado</Badge>,
+  CANCELADA:      <Badge variant="danger">Cancelado</Badge>,
+  PAGADO:         <Badge variant="info">Facturado</Badge>,
+  FACTURADA:      <Badge variant="info">Facturado</Badge>,
 };
 
 const fmt = (amount) =>

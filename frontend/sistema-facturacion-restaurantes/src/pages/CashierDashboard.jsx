@@ -5,13 +5,14 @@ import StatCard        from "../global/components/StatCard.jsx";
 import Button          from "../global/components/Button.jsx";
 import { getOrders, getOrderById } from "../modules/order/orderService.js";
 import { ROUTES } from "../global/constants/routes.js";
+import { useWebSocket } from "../global/hooks/useWebSocket.js";
 
 const fmt = (n) =>
   n !== undefined ? `$${Number(n).toLocaleString("es-CO")}` : "—";
 
 export default function CajeroDashboard() {
   const navigate = useNavigate();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("sv-SE");
 
   const [ordenesListas, setOrdenesListas] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,13 +26,13 @@ export default function CajeroDashboard() {
     setLoading(true);
     try {
       // 1. Obtener órdenes listas para facturar
-      const listasData = await getOrders({ status: "LISTA", page: 0, size: 20 });
+      const listasData = await getOrders({ status: "LISTO", page: 0, size: 20 });
       setOrdenesListas(listasData.content ?? []);
 
       // 2. Obtener estadísticas del día
       const allOrdersData = await getOrders({ page: 0, size: 200 });
       const dailySummaryOrders = (allOrdersData.content ?? []).filter((o) => {
-        const orderDate = o.fechaCreacion?.split("T")[0];
+        const orderDate = o.fechaCreacion ? new Date(o.fechaCreacion).toLocaleDateString("sv-SE") : "";
         return orderDate === today;
       });
 
@@ -86,6 +87,10 @@ export default function CajeroDashboard() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // WebSocket: escucha cambios en tiempo real para refrescar estadísticas y listado de órdenes listas
+  useWebSocket("/topic/ordenes",     () => { fetchData(); });
+  useWebSocket("/topic/facturacion", () => { fetchData(); });
 
   const STATS = [
     { label: "Órdenes Facturadas", value: String(stats.ordenesFacturadas), subtitle: "durante el día", accentColor: "#2E9E5B" },

@@ -10,7 +10,7 @@ import { getOrders, updateOrderStatus } from "../modules/order/orderService.js";
 const ESTADO_CONFIG = {
   PENDIENTE:      { badge: <Badge variant="danger">Pendiente</Badge>,       accent: "#D64035" },
   EN_PREPARACION: { badge: <Badge variant="warning">En preparación</Badge>, accent: "#E8A020" },
-  LISTA:          { badge: <Badge variant="success">Lista</Badge>,          accent: "#2E9E5B" },
+  LISTO:          { badge: <Badge variant="success">Listo para entregar</Badge>, accent: "#2E9E5B" },
 };
 
 export default function ChefDashboard() {
@@ -21,11 +21,11 @@ export default function ChefDashboard() {
   const fetchOrdenes = useCallback(async () => {
     setLoading(true);
     try {
-      // El chef ve las órdenes PENDIENTES y EN_PREPARACION y LISTAS
+      // El chef ve las órdenes PENDIENTES, EN_PREPARACION y LISTAS (LISTO)
       const [pendientes, preparacion, listas] = await Promise.all([
         getOrders({ status: "PENDIENTE",      page: 0, size: 20 }),
         getOrders({ status: "EN_PREPARACION", page: 0, size: 20 }),
-        getOrders({ status: "LISTA",          page: 0, size: 20 }),
+        getOrders({ status: "LISTO",          page: 0, size: 20 }),
       ]);
       const todas = [
         ...(pendientes.content   ?? []),
@@ -33,7 +33,7 @@ export default function ChefDashboard() {
         ...(listas.content       ?? []),
       ];
       // Ordena: pendientes primero, luego en preparación, luego listas
-      const ORDEN = { PENDIENTE: 0, EN_PREPARACION: 1, LISTA: 2 };
+      const ORDEN = { PENDIENTE: 0, EN_PREPARACION: 1, LISTO: 2 };
       todas.sort((a, b) => (ORDEN[a.estado] ?? 3) - (ORDEN[b.estado] ?? 3));
       setOrdenes(todas);
     } catch {
@@ -68,7 +68,7 @@ export default function ChefDashboard() {
   const handleMarcarLista = async (ordenId) => {
     setUpdating(ordenId);
     try {
-      await updateOrderStatus(ordenId, "LISTA");
+      await updateOrderStatus(ordenId, "LISTO");
       fetchOrdenes();
     } catch (err) {
       Swal.fire({
@@ -143,8 +143,8 @@ export default function ChefDashboard() {
                       {isUpdating ? "..." : "Marcar Lista"}
                     </Button>
                   )}
-                  {o.estado === "LISTA" && (
-                    <Badge variant="success">Lista para entregar</Badge>
+                  {o.estado === "LISTO" && (
+                    <Badge variant="success">Listo para entregar</Badge>
                   )}
                 </div>
               </div>

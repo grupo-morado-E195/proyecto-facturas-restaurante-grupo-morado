@@ -45,10 +45,10 @@ import java.util.Locale;
 public class ReportService implements ReportUseCase {
 
     // ─── Colores corporativos ──────────────────────────────────────────────────
-    private static final DeviceRgb COLOR_HEADER_BG   = new DeviceRgb(52,  58,  64);   // gris oscuro
-    private static final DeviceRgb COLOR_SECTION_BG  = new DeviceRgb(108, 117, 125);  // gris medio
-    private static final DeviceRgb COLOR_ROW_ALT     = new DeviceRgb(233, 236, 239);  // gris claro alternado
-    private static final DeviceRgb COLOR_ACCENT      = new DeviceRgb(13,  110, 253);  // azul Bootstrap
+    private static final DeviceRgb COLOR_PRIMARY     = new DeviceRgb(232, 119, 34);   // #E87722
+    private static final DeviceRgb COLOR_DARK        = new DeviceRgb(26,  10,  0);    // #1A0A00
+    private static final DeviceRgb COLOR_LIGHT       = new DeviceRgb(255, 248, 240);  // #FFF8F0
+    private static final DeviceRgb COLOR_MUTED       = new DeviceRgb(120, 120, 120);  // gris medio
 
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(new Locale("es", "CO"));
@@ -117,12 +117,7 @@ public class ReportService implements ReportUseCase {
     }
 
     /**
-     * Construye el contenido PDF usando iText 7.
-     * Método privado reutilizado tanto por el informe de ventas como por el cierre de caja.
-     * Si no hay ventas en la fecha, el PDF incluye un mensaje informativo en lugar de tablas.
-     *
-     * @param data            Datos consolidados del informe.
-     * @param titulo          Título principal del documento.
+          * @param titulo          Título principal del documento.
      * @param fecha           Fecha sobre la que se genera el informe.
      * @param nombreGenerador Nombre completo del usuario que genera el informe.
      * @return Bytes del PDF generado.
@@ -143,11 +138,35 @@ public class ReportService implements ReportUseCase {
                     com.itextpdf.io.font.constants.StandardFonts.HELVETICA,
                     PdfFontFactory.EmbeddingStrategy.PREFER_NOT_EMBEDDED);
 
-            // ── Encabezado del restaurante ─────────────────────────────────────
+            // ── Logo del Restaurante ───────────────────────────────────────────
+            byte[] imageBytes = null;
+            try (var is = getClass().getResourceAsStream("/logo.png")) {
+                if (is != null) {
+                    imageBytes = is.readAllBytes();
+                }
+            } catch (Exception e) {
+                log.error("Error al cargar el logo para el PDF: {}", e.getMessage());
+            }
+
+            if (imageBytes != null) {
+                try {
+                    com.itextpdf.io.image.ImageData imageData = com.itextpdf.io.image.ImageDataFactory.create(imageBytes);
+                    com.itextpdf.layout.element.Image logoImage = new com.itextpdf.layout.element.Image(imageData);
+                    logoImage.setWidth(70);
+                    logoImage.setHeight(70);
+                    logoImage.setHorizontalAlignment(com.itextpdf.layout.properties.HorizontalAlignment.CENTER);
+                    logoImage.setMarginBottom(8);
+                    document.add(logoImage);
+                } catch (Exception ex) {
+                    log.error("Error al renderizar el logo en el PDF: {}", ex.getMessage());
+                }
+            }
+
+            // ── Nombre del Restaurante ─────────────────────────────────────────
             Paragraph restaurantName = new Paragraph("RESTAURANTE GRUPO MORADO")
                     .setFont(bold)
-                    .setFontSize(9)
-                    .setFontColor(COLOR_SECTION_BG)
+                    .setFontSize(10)
+                    .setFontColor(COLOR_DARK)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(2);
             document.add(restaurantName);
@@ -155,8 +174,8 @@ public class ReportService implements ReportUseCase {
             // ── Título principal ───────────────────────────────────────────────
             Paragraph tituloParagraph = new Paragraph(titulo)
                     .setFont(bold)
-                    .setFontSize(20)
-                    .setFontColor(COLOR_ACCENT)
+                    .setFontSize(18)
+                    .setFontColor(COLOR_PRIMARY)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(4);
             document.add(tituloParagraph);
@@ -166,8 +185,8 @@ public class ReportService implements ReportUseCase {
                     .useAllAvailableWidth()
                     .setMarginBottom(10);
             Cell lineaCell = new Cell()
-                    .setHeight(3)
-                    .setBackgroundColor(COLOR_ACCENT)
+                    .setHeight(2)
+                    .setBackgroundColor(COLOR_PRIMARY)
                     .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
             lineaDecorativa.addCell(lineaCell);
             document.add(lineaDecorativa);
@@ -175,13 +194,13 @@ public class ReportService implements ReportUseCase {
             // ── Subtítulo: fecha y generador ──────────────────────────────────
             String fechaFormateada = fecha.format(DATE_FORMATTER);
             Paragraph subtitulo = new Paragraph()
-                    .add(new com.itextpdf.layout.element.Text("Fecha: ").setFont(bold))
-                    .add(new com.itextpdf.layout.element.Text(fechaFormateada).setFont(normal))
-                    .add(new com.itextpdf.layout.element.Text("     Generado por: ").setFont(bold))
-                    .add(new com.itextpdf.layout.element.Text(nombreGenerador).setFont(normal))
-                    .setFontSize(10)
+                    .add(new com.itextpdf.layout.element.Text("Fecha: ").setFont(bold).setFontColor(COLOR_DARK))
+                    .add(new com.itextpdf.layout.element.Text(fechaFormateada).setFont(normal).setFontColor(COLOR_MUTED))
+                    .add(new com.itextpdf.layout.element.Text("      Generado por: ").setFont(bold).setFontColor(COLOR_DARK))
+                    .add(new com.itextpdf.layout.element.Text(nombreGenerador).setFont(normal).setFontColor(COLOR_MUTED))
+                    .setFontSize(9)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(20);
+                    .setMarginBottom(15);
             document.add(subtitulo);
 
             // ── Tabla Resumen ─────────────────────────────────────────────────
@@ -189,7 +208,7 @@ public class ReportService implements ReportUseCase {
 
             Table resumenTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                     .useAllAvailableWidth()
-                    .setMarginBottom(20);
+                    .setMarginBottom(15);
 
             addHeaderRow(resumenTable, bold, "Concepto", "Valor");
             BigDecimal total = data.ventasTotales() != null ? data.ventasTotales() : BigDecimal.ZERO;
@@ -203,7 +222,7 @@ public class ReportService implements ReportUseCase {
 
             Table meseroTable = new Table(UnitValue.createPercentArray(new float[]{60, 40}))
                     .useAllAvailableWidth()
-                    .setMarginBottom(20);
+                    .setMarginBottom(15);
 
             addHeaderRow(meseroTable, bold, "Mesero", "Total");
 
@@ -226,7 +245,7 @@ public class ReportService implements ReportUseCase {
 
             Table destacadosTable = new Table(UnitValue.createPercentArray(new float[]{50, 50}))
                     .useAllAvailableWidth()
-                    .setMarginBottom(20);
+                    .setMarginBottom(15);
 
             addHeaderRow(destacadosTable, bold, "Categoría", "Plato");
             addDataRow(destacadosTable, normal,
@@ -243,9 +262,9 @@ public class ReportService implements ReportUseCase {
                     "Documento generado automáticamente por el Sistema de Facturación e Inventario")
                     .setFont(normal)
                     .setFontSize(8)
-                    .setFontColor(COLOR_SECTION_BG)
+                    .setFontColor(COLOR_MUTED)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginTop(30);
+                    .setMarginTop(25);
             document.add(pie);
 
         } catch (IOException e) {
@@ -261,17 +280,18 @@ public class ReportService implements ReportUseCase {
     private Paragraph buildSectionTitle(String text, PdfFont bold) {
         return new Paragraph(text)
                 .setFont(bold)
-                .setFontSize(12)
-                .setFontColor(COLOR_HEADER_BG)
-                .setMarginBottom(4);
+                .setFontSize(11)
+                .setFontColor(COLOR_PRIMARY)
+                .setMarginBottom(4)
+                .setMarginTop(12);
     }
 
     private void addHeaderRow(Table table, PdfFont bold, String... headers) {
         for (String header : headers) {
             table.addHeaderCell(
                     new Cell()
-                            .add(new Paragraph(header).setFont(bold).setFontColor(ColorConstants.WHITE).setFontSize(10))
-                            .setBackgroundColor(COLOR_HEADER_BG)
+                            .add(new Paragraph(header).setFont(bold).setFontColor(ColorConstants.WHITE).setFontSize(9))
+                            .setBackgroundColor(COLOR_DARK)
                             .setPadding(6)
                             .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER)
             );
@@ -279,20 +299,23 @@ public class ReportService implements ReportUseCase {
     }
 
     private void addDataRow(Table table, PdfFont font, String col1, String col2, boolean alternate) {
-        DeviceRgb rowBg = alternate ? COLOR_ROW_ALT : null;
+        DeviceRgb rowBg = alternate ? COLOR_LIGHT : null;
 
         Cell c1 = new Cell()
-                .add(new Paragraph(col1).setFont(font).setFontSize(10))
-                .setPadding(5)
+                .add(new Paragraph(col1).setFont(font).setFontSize(9).setFontColor(COLOR_DARK))
+                .setPadding(6)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
         Cell c2 = new Cell()
-                .add(new Paragraph(col2).setFont(font).setFontSize(10))
-                .setPadding(5)
+                .add(new Paragraph(col2).setFont(font).setFontSize(9).setFontColor(COLOR_DARK))
+                .setPadding(6)
                 .setBorder(com.itextpdf.layout.borders.Border.NO_BORDER);
 
         if (rowBg != null) {
             c1.setBackgroundColor(rowBg);
             c2.setBackgroundColor(rowBg);
+        } else {
+            c1.setBackgroundColor(ColorConstants.WHITE);
+            c2.setBackgroundColor(ColorConstants.WHITE);
         }
 
         table.addCell(c1);

@@ -65,7 +65,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/ordenes/*").hasRole("MESERO")
                         .requestMatchers(HttpMethod.PUT, "/api/ordenes/*/estado").hasRole("CHEF")
                         .requestMatchers(HttpMethod.PUT, "/api/ordenes/**").hasAnyRole("ADMINISTRADOR", "MESERO")
-                        .requestMatchers(HttpMethod.GET, "/api/ordenes/**").hasAnyRole("ADMINISTRADOR", "MESERO", "CHEF")
+                        .requestMatchers(HttpMethod.GET, "/api/ordenes/**").hasAnyRole("ADMINISTRADOR", "MESERO", "CHEF", "CAJERO")
                         // Reglas del módulo de Facturación
                         .requestMatchers(HttpMethod.PUT, "/api/facturacion/**").hasRole("CAJERO")
                         // Reglas del módulo de Informes

@@ -12,8 +12,11 @@ const ESTADO_BADGE = {
   PENDIENTE:      <Badge variant="danger">Pendiente</Badge>,
   EN_PREPARACION: <Badge variant="warning">En preparación</Badge>,
   LISTA:          <Badge variant="success">Lista</Badge>,
+  LISTO:          <Badge variant="success">Listo</Badge>,
   FACTURADA:      <Badge variant="info">Facturada</Badge>,
+  PAGADO:         <Badge variant="info">Pagado</Badge>,
   CANCELADA:      <Badge>Cancelada</Badge>,
+  CANCELADO:      <Badge>Cancelado</Badge>,
 };
 
 export default function AdminDashboard() {
@@ -32,7 +35,7 @@ export default function AdminDashboard() {
       const mesas    = mesasRes.content  ?? [];
       const usuarios = usuariosRes.content ?? [];
 
-      const facturadas   = ordenes.filter((o) => o.estado === "FACTURADA");
+      const facturadas   = ordenes.filter((o) => o.estado === "PAGADO" || o.estado === "FACTURADA");
       const mesasOcupadas = mesas.filter((m) => m.disponibility === "OCUPADA");
 
       setStats({
