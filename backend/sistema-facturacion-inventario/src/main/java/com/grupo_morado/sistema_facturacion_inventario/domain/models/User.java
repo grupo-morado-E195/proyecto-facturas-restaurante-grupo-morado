@@ -28,6 +28,8 @@ public class User {
         this.status = status;
     }
 
+    // ─── Métodos de validación de instancia ──────────────────────────────────
+
     public void validateEmail(String email){
         if(email == null || email.isBlank()){
             throw new InvalidEmailException("Correo electronico es nulo o vacío.");
@@ -69,6 +71,44 @@ public class User {
     public void validateStatus(){
         if(status == null || status.toString().isBlank()){
             throw new InvalidFieldException("El estado del usuario es nulo o vacío.");
+        }
+    }
+
+    // ─── Métodos de validación estáticos (para flujos sin instancia completa) ─
+
+    /**
+     * Valida el formato de un correo electrónico reutilizando las reglas de dominio.
+     * Útil para flujos como recuperación de contraseña donde no se crea un User completo.
+     *
+     * @param email Correo a validar.
+     * @throws InvalidEmailException si el formato es inválido.
+     */
+    public static void validateEmailFormat(String email) {
+        if (email == null || email.isBlank()) {
+            throw new InvalidEmailException("Correo electronico es nulo o vacío.");
+        }
+        if (email.length() >= 254) {
+            throw new InvalidEmailException("Correo electronico '" + email + "' muy largo.");
+        }
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        if (!email.matches(regex)) {
+            throw new InvalidEmailException("Correo electronico '" + email + "' es invalido.");
+        }
+    }
+
+    /**
+     * Valida el formato de una contraseña reutilizando las reglas de dominio.
+     * Útil para flujos donde no se crea un User completo (ej. actualización de contraseña).
+     *
+     * @param password Contraseña a validar.
+     * @throws InvalidPasswordException si el formato es inválido.
+     */
+    public static void validatePasswordFormat(String password) {
+        if (password == null || password.isBlank()) {
+            throw new InvalidPasswordException("Contraseña es nula o vacía.");
+        }
+        if (password.length() >= 254) {
+            throw new InvalidPasswordException("Contraseña '" + password + "' muy larga.");
         }
     }
 }

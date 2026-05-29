@@ -10,4 +10,21 @@ public interface AuthUseCase {
     AuthLoginResultDTO login(User user);
     AuthRegisterResultDTO register(AuthRegisterDTO user);
 
+    /**
+     * Solicita un restablecimiento de contraseña para el email dado.
+     * Genera una contraseña temporal, la persiste hasheada y la envía por correo.
+     *
+     * @param email Correo electrónico del usuario.
+     */
+    void requestPasswordReset(String email);
+
+    /**
+     * Actualiza la contraseña definitiva del usuario tras un login con contraseña temporal.
+     * Invalida la contraseña temporal y limpia el indicador mustChangePassword.
+     *
+     * @param email       Correo del usuario autenticado con contraseña temporal.
+     * @param newPassword Nueva contraseña definitiva en texto plano.
+     */
+    void updatePassword(String email, String newPassword);
 }
+
