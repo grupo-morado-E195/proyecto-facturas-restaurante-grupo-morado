@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 
 @Configuration
@@ -30,6 +31,9 @@ public class SecurityConfig {
 
     private final UserDAO userDAO;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${ALLOWED_ORIGINS:http://localhost:5173,https://proyecto-facturas-restaurante-grupo.vercel.app}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -90,7 +94,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOrigins(List.of(allowedOrigins.split(",")));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
