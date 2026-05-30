@@ -35,9 +35,17 @@ public class EmailNotificationAdapter implements EmailNotificationPort {
     @Value("${RESEND_FROM_EMAIL:onboarding@resend.dev}")
     private String resendFromEmail;
 
+    @Value("${SENDGRID_API_KEY:}")
+    private String sendGridApiKey;
+
+    @Value("${SENDGRID_FROM_EMAIL:sistemafacturacionrestaurantes@gmail.com}")
+    private String sendGridFromEmail;
+
     @Override
     public void sendTemporaryPasswordEmail(String toEmail, String temporaryPassword) {
-        if (resendApiKey != null && !resendApiKey.isBlank()) {
+        if (sendGridApiKey != null && !sendGridApiKey.isBlank()) {
+            sendEmailViaSendGridApi(toEmail, temporaryPassword);
+        } else if (resendApiKey != null && !resendApiKey.isBlank()) {
             sendEmailViaResendApi(toEmail, temporaryPassword);
         } else {
             sendEmailViaSmtp(toEmail, temporaryPassword);
@@ -66,6 +74,7 @@ public class EmailNotificationAdapter implements EmailNotificationPort {
                     .uri(URI.create("https://api.resend.com/emails"))
                     .header("Authorization", "Bearer " + resendApiKey)
                     .header("Content-Type", "application/json")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
@@ -80,6 +89,51 @@ public class EmailNotificationAdapter implements EmailNotificationPort {
         } catch (Exception e) {
             log.error("Error al enviar correo de recuperación vía Resend a {}: {}", toEmail, e.getMessage());
             throw new RuntimeException("No se pudo enviar el correo de recuperación de contraseña vía Resend.", e);
+        }
+    }
+
+    private void sendEmailViaSendGridApi(String toEmail, String temporaryPassword) {
+        log.info("Iniciando envío de correo a {} usando la API HTTP de SendGrid...", toEmail);
+        try {
+            String htmlBody = buildEmailBody(temporaryPassword);
+            String escapedHtml = htmlBody
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r");
+
+            String json = "{"
+                    + "\"personalizations\":[{"
+                    + "\"to\":[{\"email\":\"" + toEmail + "\"}]"
+                    + "}],"
+                    + "\"from\":{\"email\":\"" + sendGridFromEmail + "\"},"
+                    + "\"subject\":\"Recuperación de contraseña — Sistema de Facturación\","
+                    + "\"content\":[{"
+                    + "\"type\":\"text/html\","
+                    + "\"value\":\"" + escapedHtml + "\""
+                    + "}]"
+                    + "}";
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.sendgrid.com/v3/mail/send"))
+                    .header("Authorization", "Bearer " + sendGridApiKey)
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("Correo de recuperación enviado con éxito a {} mediante la API de SendGrid.", toEmail);
+            } else {
+                log.error("Fallo al enviar correo mediante la API de SendGrid. Código: {}, Cuerpo: {}", 
+                        response.statusCode(), response.body());
+                throw new RuntimeException("Fallo al enviar correo mediante la API de SendGrid: " + response.body());
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar correo de recuperación vía SendGrid a {}: {}", toEmail, e.getMessage());
+            throw new RuntimeException("No se pudo enviar el correo de recuperación de contraseña vía SendGrid.", e);
         }
     }
 
