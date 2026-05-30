@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,85 +21,95 @@ public interface OrderReportRepository extends JpaRepository<Order, Long> {
 
     /**
      * Suma el total de todas las órdenes con el estado indicado cuya fecha de creación
-     * coincide con la fecha dada.
+     * coincide con el rango dado.
      *
-     * @param date   Fecha sobre la que se filtra (comparada contra CAST(createdAt AS localdate)).
+     * @param start  Fecha inicio.
+     * @param end    Fecha fin.
      * @param status Estado de la orden (p. ej. PAGADO).
      * @return Suma de totales, o {@link Optional#empty()} si no hay registros.
      */
     @Query("SELECT SUM(o.total) FROM Order o " +
-           "WHERE CAST(o.createdAt AS localdate) = :date " +
+           "WHERE o.createdAt >= :start AND o.createdAt <= :end " +
            "AND o.status = :status")
-    Optional<BigDecimal> sumTotalByDateAndStatus(
-            @Param("date") LocalDate date,
+    Optional<BigDecimal> sumTotalByDateRangeAndStatus(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
             @Param("status") OrderStatusEnum status);
 
     /**
      * Devuelve una lista de arreglos [nombre, apellidos, totalVentas] agrupados por mesero
-     * para todas las órdenes con el estado indicado en la fecha dada.
+     * para todas las órdenes con el estado indicado en el rango de fecha dado.
      *
-     * @param date   Fecha de filtrado.
+     * @param start  Fecha inicio.
+     * @param end    Fecha fin.
      * @param status Estado de la orden.
      * @return Lista de Object[] con índices: [0]=name, [1]=lastname, [2]=total.
      */
     @Query("SELECT o.waiter.name, o.waiter.lastname, SUM(o.total) " +
            "FROM Order o " +
-           "WHERE CAST(o.createdAt AS localdate) = :date " +
+           "WHERE o.createdAt >= :start AND o.createdAt <= :end " +
            "AND o.status = :status " +
            "GROUP BY o.waiter.id, o.waiter.name, o.waiter.lastname")
-    List<Object[]> findSalesByWaiterAndDate(
-            @Param("date") LocalDate date,
+    List<Object[]> findSalesByWaiterAndDateRange(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
             @Param("status") OrderStatusEnum status);
 
     /**
-     * Devuelve el nombre del plato más vendido (por cantidad) en la fecha indicada,
+     * Devuelve el nombre del plato más vendido (por cantidad) en el rango de fecha indicado,
      * considerando solo órdenes con el estado dado.
      *
-     * @param date   Fecha de filtrado.
+     * @param start  Fecha inicio.
+     * @param end    Fecha fin.
      * @param status Estado de la orden.
      * @return Nombre del plato más vendido, o {@link Optional#empty()} si no hay datos.
      */
     @Query("SELECT od.dish.name " +
            "FROM OrderDetail od " +
-           "WHERE CAST(od.order.createdAt AS localdate) = :date " +
+           "WHERE od.order.createdAt >= :start AND od.order.createdAt <= :end " +
            "AND od.order.status = :status " +
            "GROUP BY od.dish.id, od.dish.name " +
            "ORDER BY SUM(od.quantity) DESC " +
            "LIMIT 1")
-    Optional<String> findMostSoldDishByDate(
-            @Param("date") LocalDate date,
+    Optional<String> findMostSoldDishByDateRange(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
             @Param("status") OrderStatusEnum status);
 
     /**
-     * Devuelve el nombre del plato menos vendido (por cantidad) en la fecha indicada,
+     * Devuelve el nombre del plato menos vendido (por cantidad) en el rango de fecha indicado,
      * considerando solo órdenes con el estado dado.
      *
-     * @param date   Fecha de filtrado.
+     * @param start  Fecha inicio.
+     * @param end    Fecha fin.
      * @param status Estado de la orden.
      * @return Nombre del plato menos vendido, o {@link Optional#empty()} si no hay datos.
      */
     @Query("SELECT od.dish.name " +
            "FROM OrderDetail od " +
-           "WHERE CAST(od.order.createdAt AS localdate) = :date " +
+           "WHERE od.order.createdAt >= :start AND od.order.createdAt <= :end " +
            "AND od.order.status = :status " +
            "GROUP BY od.dish.id, od.dish.name " +
            "ORDER BY SUM(od.quantity) ASC " +
            "LIMIT 1")
-    Optional<String> findLeastSoldDishByDate(
-            @Param("date") LocalDate date,
+    Optional<String> findLeastSoldDishByDateRange(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
             @Param("status") OrderStatusEnum status);
 
     /**
-     * Verifica si existen órdenes con el estado indicado en la fecha dada.
+     * Verifica si existen órdenes con el estado indicado en el rango de fecha dado.
      *
-     * @param date   Fecha de filtrado.
+     * @param start  Fecha inicio.
+     * @param end    Fecha fin.
      * @param status Estado de la orden.
      * @return {@code true} si existe al menos una orden que cumpla el criterio.
      */
     @Query("SELECT COUNT(o) > 0 FROM Order o " +
-           "WHERE CAST(o.createdAt AS localdate) = :date " +
+           "WHERE o.createdAt >= :start AND o.createdAt <= :end " +
            "AND o.status = :status")
-    boolean existsByDateAndStatus(
-            @Param("date") LocalDate date,
+    boolean existsByDateRangeAndStatus(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
             @Param("status") OrderStatusEnum status);
 }

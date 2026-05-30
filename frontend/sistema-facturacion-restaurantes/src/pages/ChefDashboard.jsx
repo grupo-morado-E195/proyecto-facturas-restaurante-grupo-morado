@@ -5,7 +5,8 @@ import PageHeader      from "../global/components/PageHeader.jsx";
 import Badge           from "../global/components/Badge.jsx";
 import Button          from "../global/components/Button.jsx";
 import { useWebSocket }    from "../global/hooks/useWebSocket.js";
-import { getOrders, updateOrderStatus } from "../modules/order/orderService.js";
+import { getOrders, updateOrderStatus, getOrderById } from "../modules/order/orderService.js";
+import OrderView from "../modules/order/components/OrderView.jsx";
 
 const ESTADO_CONFIG = {
   PENDIENTE:      { badge: <Badge variant="danger">Pendiente</Badge>,       accent: "#D64035" },
@@ -17,6 +18,8 @@ export default function ChefDashboard() {
   const [ordenes,  setOrdenes]  = useState([]);
   const [loading,  setLoading]  = useState(false);
   const [updating, setUpdating] = useState(null);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [showView, setShowView] = useState(false);
 
   const fetchOrdenes = useCallback(async () => {
     setLoading(true);
@@ -82,6 +85,21 @@ export default function ChefDashboard() {
     }
   };
 
+  const handleVerOrden = async (o) => {
+    try {
+      const detail = await getOrderById(o.id);
+      setSelectedDetail(detail);
+      setShowView(true);
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo cargar el detalle de la orden.",
+        confirmButtonColor: "#E87722",
+      });
+    }
+  };
+
   if (loading && ordenes.length === 0) {
     return (
       <DashboardLayout screenName="Cola de Órdenes" activeItem="ordenes">
@@ -107,8 +125,9 @@ export default function ChefDashboard() {
             return (
               <div
                 key={o.id}
-                className="bg-white rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 border-l-4"
+                className="bg-white rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-4 border-l-4 cursor-pointer hover:bg-gray-50 transition-colors"
                 style={{ borderLeftColor: accent }}
+                onClick={() => handleVerOrden(o)}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -127,7 +146,10 @@ export default function ChefDashboard() {
                   {o.estado === "PENDIENTE"      && (
                     <Button
                       small
-                      onClick={() => handleIniciar(o.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleIniciar(o.id);
+                      }}
                       disabled={isUpdating}
                     >
                       {isUpdating ? "..." : "Iniciar"}
@@ -137,7 +159,10 @@ export default function ChefDashboard() {
                     <Button
                       small
                       variant="success"
-                      onClick={() => handleMarcarLista(o.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMarcarLista(o.id);
+                      }}
                       disabled={isUpdating}
                     >
                       {isUpdating ? "..." : "Marcar Lista"}
@@ -151,6 +176,10 @@ export default function ChefDashboard() {
             );
           })}
         </div>
+      )}
+
+      {showView && selectedDetail && (
+        <OrderView orden={selectedDetail} onClose={() => setShowView(false)} />
       )}
     </DashboardLayout>
   );

@@ -115,12 +115,7 @@ export default function AdminOrdenes() {
       </div>
 
       {showView && selected && (
-        <Modal
-          title={`Detalle Orden #${String(selected.id).padStart(3, "0")}`}
-          onClose={() => setShowView(false)}
-        >
-          <OrderView orden={selectedDetail ?? selected} onClose={() => setShowView(false)} />
-        </Modal>
+        <OrderView orden={selectedDetail ?? selected} onClose={() => setShowView(false)} />
       )}
     </DashboardLayout>
   );

@@ -37,14 +37,22 @@ export default function OrderForm({ onCancel, onSuccess, isEdit = false, ordenId
           const orden = await getOrderById(ordenId);
           setMesaId(String(orden.tableNumber ?? ""));
           const itemsMap = {};
+          let orderNotes = "";
           orden.details?.forEach((d) => {
             // Busca el plato por nombre en la lista de disponibles
-            itemsMap[d.nombrePlato] = {
-              cantidad:     d.cantidad,
-              observaciones: d.observaciones ?? "",
-            };
+            const platoMatch = platosData.find((p) => p.name === d.nombrePlato);
+            if (platoMatch) {
+              itemsMap[platoMatch.id] = {
+                cantidad:     d.cantidad,
+                observaciones: d.observaciones ?? "",
+              };
+              if (!orderNotes && d.observaciones) {
+                orderNotes = d.observaciones;
+              }
+            }
           });
           setItems(itemsMap);
+          setNotas(orderNotes);
         }
       } catch {
         setError("Error al cargar datos. Intenta de nuevo.");
@@ -77,7 +85,7 @@ export default function OrderForm({ onCancel, onSuccess, isEdit = false, ordenId
       .map((p) => ({
         platoId:      p.id,
         cantidad:     items[p.id].cantidad,
-        observaciones: items[p.id]?.observaciones ?? notas,
+        observaciones: items[p.id]?.observaciones || notas,
       }));
 
     if (detalles.length === 0) {
