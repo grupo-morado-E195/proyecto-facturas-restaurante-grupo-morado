@@ -22,12 +22,16 @@ public class ReportProviderAdapter implements ReportProviderPort {
 
     private final OrderReportRepository orderReportRepository;
 
+    private static final java.time.ZoneId ZONE_BOGOTA = java.time.ZoneId.of("America/Bogota");
+
     private Timestamp getStartTimestamp(LocalDate date) {
-        return Timestamp.valueOf(date.atStartOfDay());
+        java.time.ZonedDateTime zdt = date.atStartOfDay(ZONE_BOGOTA);
+        return Timestamp.from(zdt.toInstant());
     }
 
     private Timestamp getEndTimestamp(LocalDate date) {
-        return Timestamp.valueOf(date.atTime(23, 59, 59, 999999999));
+        java.time.ZonedDateTime zdt = date.atTime(23, 59, 59, 999999999).atZone(ZONE_BOGOTA);
+        return Timestamp.from(zdt.toInstant());
     }
 
     @Override
