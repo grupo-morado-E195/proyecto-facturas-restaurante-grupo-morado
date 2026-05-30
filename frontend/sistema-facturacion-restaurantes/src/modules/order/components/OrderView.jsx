@@ -29,6 +29,9 @@ export default function OrderView({ orden, onClose }) {
   const impuesto    = orden.consumptionTax;
   const total       = orden.total;
 
+  // Buscar si hay alguna observación general o notas en los platos
+  const notasGenerales = detalles.find((d) => d.observaciones)?.observaciones;
+
   return (
     <Modal title={`Detalle Orden #${String(ordenId).padStart(3, "0")}`} onClose={onClose}>
       <div className="bg-gray-50 rounded-lg px-4 py-3 mb-4 text-sm flex justify-between items-center">
@@ -40,6 +43,17 @@ export default function OrderView({ orden, onClose }) {
         </div>
         {ESTADO_BADGE[estado] ?? <Badge>{estado}</Badge>}
       </div>
+
+      {notasGenerales && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4 rounded-r-lg shadow-sm">
+          <p className="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1">
+            ⚠️ OBSERVACIONES PARA LA COCINA:
+          </p>
+          <p className="text-base font-black text-amber-900 mt-1 break-words">
+            {notasGenerales}
+          </p>
+        </div>
+      )}
 
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
         Platos de la orden

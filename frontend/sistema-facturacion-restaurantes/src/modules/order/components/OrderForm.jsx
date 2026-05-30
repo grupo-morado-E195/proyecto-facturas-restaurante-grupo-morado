@@ -25,19 +25,17 @@ export default function OrderForm({ onCancel, onSuccess, isEdit = false, ordenId
           getTables(0, 100),
           getAvailableDishes(),
         ]);
-        // Solo mesas ACTIVAS y DISPONIBLES para nueva orden
-        const mesasDisponibles = (mesasData.content ?? []).filter(
-          (m) => m.status === "ACTIVO" && m.disponibility === "DISPONIBLE"
-        );
-        setMesas(mesasDisponibles);
         setPlatos(platosData);
+
+        let activeTableNumber = null;
+        let itemsMap = {};
+        let orderNotes = "";
 
         // Si es edición, carga la orden existente
         if (isEdit && ordenId) {
           const orden = await getOrderById(ordenId);
-          setMesaId(String(orden.tableNumber ?? ""));
-          const itemsMap = {};
-          let orderNotes = "";
+          activeTableNumber = orden.tableNumber;
+          
           orden.details?.forEach((d) => {
             // Busca el plato por nombre en la lista de disponibles
             const platoMatch = platosData.find((p) => p.name === d.nombrePlato);
@@ -53,6 +51,20 @@ export default function OrderForm({ onCancel, onSuccess, isEdit = false, ordenId
           });
           setItems(itemsMap);
           setNotas(orderNotes);
+        }
+
+        // Solo mesas ACTIVAS y (DISPONIBLES o la mesa actual de la orden en edición)
+        const mesasFiltradas = (mesasData.content ?? []).filter(
+          (m) => m.status === "ACTIVO" && (m.disponibility === "DISPONIBLE" || (activeTableNumber !== null && m.number === activeTableNumber))
+        );
+        setMesas(mesasFiltradas);
+
+        // Si es edición, buscamos la mesa por su número para establecer el ID de mesa correcto en el select
+        if (activeTableNumber !== null) {
+          const mesaMatch = (mesasData.content ?? []).find(m => m.number === activeTableNumber);
+          if (mesaMatch) {
+            setMesaId(String(mesaMatch.id));
+          }
         }
       } catch {
         setError("Error al cargar datos. Intenta de nuevo.");
