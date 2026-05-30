@@ -66,6 +66,7 @@ public class EmailNotificationAdapter implements EmailNotificationPort {
                     .uri(URI.create("https://api.resend.com/emails"))
                     .header("Authorization", "Bearer " + resendApiKey)
                     .header("Content-Type", "application/json")
+                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
