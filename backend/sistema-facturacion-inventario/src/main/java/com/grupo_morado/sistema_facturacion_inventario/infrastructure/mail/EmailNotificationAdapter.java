@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 /**
  * Adaptador de infraestructura para el envío de correos electrónicos.
@@ -25,8 +29,62 @@ public class EmailNotificationAdapter implements EmailNotificationPort {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    @Value("${RESEND_API_KEY:}")
+    private String resendApiKey;
+
+    @Value("${RESEND_FROM_EMAIL:onboarding@resend.dev}")
+    private String resendFromEmail;
+
     @Override
     public void sendTemporaryPasswordEmail(String toEmail, String temporaryPassword) {
+        if (resendApiKey != null && !resendApiKey.isBlank()) {
+            sendEmailViaResendApi(toEmail, temporaryPassword);
+        } else {
+            sendEmailViaSmtp(toEmail, temporaryPassword);
+        }
+    }
+
+    private void sendEmailViaResendApi(String toEmail, String temporaryPassword) {
+        log.info("Iniciando envío de correo a {} usando la API HTTP de Resend...", toEmail);
+        try {
+            String htmlBody = buildEmailBody(temporaryPassword);
+            String escapedHtml = htmlBody
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r");
+
+            String json = "{"
+                    + "\"from\":\"" + resendFromEmail + "\","
+                    + "\"to\":\"" + toEmail + "\","
+                    + "\"subject\":\"Recuperación de contraseña — Sistema de Facturación\","
+                    + "\"html\":\"" + escapedHtml + "\""
+                    + "}";
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("Correo de recuperación enviado con éxito a {} mediante la API de Resend.", toEmail);
+            } else {
+                log.error("Fallo al enviar correo mediante la API de Resend. Código: {}, Cuerpo: {}", 
+                        response.statusCode(), response.body());
+                throw new RuntimeException("Fallo al enviar correo mediante la API de Resend: " + response.body());
+            }
+        } catch (Exception e) {
+            log.error("Error al enviar correo de recuperación vía Resend a {}: {}", toEmail, e.getMessage());
+            throw new RuntimeException("No se pudo enviar el correo de recuperación de contraseña vía Resend.", e);
+        }
+    }
+
+    private void sendEmailViaSmtp(String toEmail, String temporaryPassword) {
+        log.info("Iniciando envío de correo a {} usando SMTP de Gmail...", toEmail);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
