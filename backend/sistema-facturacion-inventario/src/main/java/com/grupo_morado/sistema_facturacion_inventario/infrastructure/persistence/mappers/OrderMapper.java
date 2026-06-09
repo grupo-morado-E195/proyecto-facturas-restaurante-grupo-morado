@@ -67,6 +67,7 @@ public class OrderMapper {
         }
 
         return new OrderDetailResultDTO(
+                detail.getDish() != null ? detail.getDish().getId() : null,
                 nombrePlato,
                 detail.getQuantity(),
                 detail.getObservation(),
