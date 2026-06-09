@@ -12,6 +12,7 @@ import java.math.BigDecimal;
  * @param subtotalDetalle  Subtotal calculado para esta línea de detalle (precioUnitario * cantidad).
  */
 public record OrderDetailResultDTO(
+        Long platoId,
         String nombrePlato,
         Integer cantidad,
         String observaciones,

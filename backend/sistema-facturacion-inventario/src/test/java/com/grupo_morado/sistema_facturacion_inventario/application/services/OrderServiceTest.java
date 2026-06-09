@@ -97,7 +97,7 @@ class OrderServiceTest {
         orderResultDTO = new OrderResultDTO(
                 1L,
                 5,
-                List.of(new OrderDetailResultDTO("Pizza", 2, "Sin cebolla", BigDecimal.valueOf(50.00), BigDecimal.valueOf(100.00))),
+                List.of(new OrderDetailResultDTO(10L, "Pizza", 2, "Sin cebolla", BigDecimal.valueOf(50.00), BigDecimal.valueOf(100.00))),
                 OrderStatusEnum.PENDIENTE,
                 BigDecimal.valueOf(100.00),
                 BigDecimal.valueOf(8.00),
